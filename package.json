@@ -1,0 +1,16 @@
+{
+  "name": "gira-home",
+  "version": "1.0.0",
+  "description": "Homebridge plugin for Gira HomeServer",
+  "main": "index.js",
+  "author": "Hennycraft",
+  "license": "ISC",
+  "dependencies": {
+    "homebridge": "^1.1.6",
+    
+  },
+  "scripts": {
+    "start": "homebridge",
+    "test": "echo \"No tests specified\""
+  }
+}
