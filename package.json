@@ -1,16 +1,32 @@
 {
-  "name": "gira-home",
+  "name": "homebridge-gira-homeserver",
   "version": "1.0.0",
-  "description": "Homebridge plugin for Gira HomeServer",
+  "description": "Ein Homebridge-Plugin zur Integration von Gira HomeServer in Apple HomeKit.",
   "main": "index.js",
-  "author": "Hennycraft",
-  "license": "ISC",
-  "dependencies": {
-    "homebridge": "^1.1.6",
-    
-  },
   "scripts": {
-    "start": "homebridge",
-    "test": "echo \"No tests specified\""
-  }
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "homebridge",
+    "gira",
+    "homekit"
+  ],
+  "author": "Dein Name",
+  "license": "MIT",
+  "dependencies": {
+    "homebridge": "^0.4.0",
+    "andere_abhängigkeit": "^1.2.3" // Ersetze 1.2.3 durch die tatsächliche Versionsnummer
+  },
+  "engines": {
+    "node": ">=14.0.0", // Ersetze 14.0.0 durch die Mindestversion von Node.js
+    "homebridge": ">=1.0.0" // Ersetze 1.0.0 durch die Mindestversion von Homebridge
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dein-benutzername/dein-repository.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dein-benutzername/dein-repository/issues"
+  },
+  "homepage": "https://github.com/dein-benutzername/dein-repository#readme"
 }
