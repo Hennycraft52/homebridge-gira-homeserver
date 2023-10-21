@@ -28,7 +28,8 @@ Konfiguriere das Plugin in deiner Homebridge-config.json-Datei. Siehe Konfigurat
 
 Starte Homebridge neu.
 
-Konfiguration
+## Konfiguration
+
 Füge das Plugin zu deiner Homebridge-config.json-Datei hinzu. Hier ist ein Beispiel:
 
  ```json
@@ -44,7 +45,8 @@ Füge das Plugin zu deiner Homebridge-config.json-Datei hinzu. Hier ist ein Beis
 
 
 ```
-##Erklährung:
+## Erklährung:
+
 ````
 platform: Der Name deiner Plattform.
 name: Der Anzeigename deiner Plattform in HomeKit.
@@ -52,10 +54,12 @@ host: Die IP-Adresse oder der Hostname deines Gira HomeServers.
 username: Dein Gira HomeServer Benutzername.
 password: Dein Gira HomeServer Passwort.
 ````
-##Lizenz
+## Lizenz
+
 Dieses Projekt ist unter der MIT-Lizenz lizenziert. Siehe LICENSE für weitere Details.
 
-##Mitwirkende
+## Mitwirkende
+
 Wir begrüßen Beiträge und Issues von der Community. Bitte beachte unsere Beitragshinweise für weitere Informationen.
 
 
