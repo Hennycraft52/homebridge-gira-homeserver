@@ -1,30 +1,39 @@
-const homebridge = require('homebridge');
-
-const PluginName = 'GiraHomeServerPlatform';
-
-class GiraHomeServerPlatform {
-  constructor(log, config) {
+class MyPlatform {
+  constructor(log, config, api) {
     this.log = log;
     this.config = config;
+    this.api = api;
 
-    // Hier kannst du weitere Initialisierungen für dein Plugin vornehmen
+    // Füge die Konfigurationselemente für die Homebridge-UI hinzu
+    this.configureAccessory();
   }
 
-  accessories(callback) {
-    // Hier fügst du deine Geräte-Accessories hinzu und rufst dann das Callback auf
-    const accessories = [];
+  configureAccessory() {
+    const accessory = new this.api.platformAccessory('My Configuration', 'configAccessory');
+    const service = accessory.addService(this.api.hap.Service.Switch, 'My Switch');
+    
+    // Füge eine Characteristic hinzu, um die Konfiguration zu steuern
+    service.addCharacteristic(this.api.hap.Characteristic.On)
+      .on('get', this.getConfiguration.bind(this))
+      .on('set', this.setConfiguration.bind(this));
 
-    // Beispiel: Füge ein Licht-Accessory hinzu
-    const lightAccessory = new homebridge.platformAccessory('Licht', 'LightAccessory');
-    // Konfiguriere das Licht-Accessory entsprechend deiner Anforderungen
-    accessories.push(lightAccessory);
+    // Füge das Accessory zur Plattform hinzu
+    this.api.registerPlatformAccessories('my-plugin', 'MyPlatform', [accessory]);
+  }
 
-    // Füge weitere Accessories hinzu, wie benötigt
+  getConfiguration(callback) {
+    // Hier kannst du die aktuelle Konfiguration auslesen
+    // und über die Homebridge-UI anzeigen
+    const currentConfiguration = ...;
+    callback(null, currentConfiguration);
+  }
 
-    callback(accessories);
+  setConfiguration(value, callback) {
+    // Hier kannst du die Konfiguration basierend auf dem in der Homebridge-UI
+    // festgelegten Wert aktualisieren
+    // und die Änderungen in der `config.json` speichern
+    const newConfiguration = value;
+    // Speichere die Konfigurationsänderungen
+    callback(null);
   }
 }
-
-module.exports = (api) => {
-  homebridge.registerPlatform(PluginName, PluginName, GiraHomeServerPlatform);
-};
