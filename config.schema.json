@@ -9,16 +9,19 @@
     },
     "host": {
       "type": "string",
-      "description": "IP-Adresse oder Hostname des Gira HomeServers"
+      "description": "IP-Adresse oder Hostname des Gira HomeServers",
+      "default": "192.168.1.100"  // Hier kannst du eine Standard-IP-Adresse oder Hostname angeben
     },
     "username": {
       "type": "string",
-      "description": "Benutzername für die Verbindung zum Gira HomeServer"
+      "description": "Benutzername für die Verbindung zum Gira HomeServer",
+      "default": "admin"  // Hier kannst du einen Standard-Benutzernamen angeben
     },
     "password": {
       "type": "string",
-      "description": "Passwort für die Verbindung zum Gira HomeServer"
+      "description": "Passwort für die Verbindung zum Gira HomeServer",
+      "default": "password"  // Hier kannst du ein Standard-Passwort angeben
     }
   },
-  "required": ["platform", "host", "username", "password"]
+  "required": ["platform"]
 }
