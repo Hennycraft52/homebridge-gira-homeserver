@@ -9,8 +9,7 @@
   "keywords": ["homebridge", "homebridge-plugin", "gira", "homekit"],
   "author": "Dein Name",
   "license": "MIT",
-  "dependencies": {
-    "homebridge": "^1.3.4"  
+  "dependencies": {  
       
   },
   "engines": {
