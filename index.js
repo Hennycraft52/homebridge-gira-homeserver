@@ -1,5 +1,17 @@
-const GiraHomeServerPlatform = require('./GiraHomeserverPlatform.js');
+const { API } = require('homebridge');
 
-module.exports = (homebridge) => {
-  homebridge.registerPlatform('homebridge-gira-homeserver', 'GiraHomeServer', GiraHomeServerPlatform);
+class GiraHomeserverPlatform {
+  constructor(log, config, api) {
+    this.log = log;
+    this.config = config;
+    this.api = api;
+
+    // Hier implementierst du den restlichen Code für deine Plattform
+  }
+
+  // Weitere Methoden und Logik für deine Plattform
+}
+
+module.exports = (api) => {
+  api.registerPlatform('GiraHomeServer', 'GiraHomeserverPlatform', GiraHomeserverPlatform);
 };
