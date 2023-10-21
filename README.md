@@ -31,7 +31,7 @@ Konfiguration
 Füge das Plugin zu deiner Homebridge-config.json-Datei hinzu. Hier ist ein Beispiel:
 
 ````json
-Copy code
+
 "platforms": [
   {
     "platform": "GiraHomeServer",
