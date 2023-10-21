@@ -1,0 +1,15 @@
+# Ignoriere Node-Module
+node_modules/
+
+# Ignoriere Konfigurationsdateien
+config.json
+
+# Ignoriere NPM-Pakete
+npm-debug.log
+
+# Ignoriere .DS_Store-Dateien (nur für macOS)
+.DS_Store
+
+# Ignoriere generierte Dateien
+dist/
+build/
