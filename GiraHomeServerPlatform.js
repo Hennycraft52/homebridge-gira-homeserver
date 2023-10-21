@@ -24,7 +24,7 @@ class GiraHomeServerPlatform {
   getConfiguration(callback) {
     // Hier kannst du die aktuelle Konfiguration auslesen
     // und über die Homebridge-UI anzeigen
-    const currentConfiguration = ...; // Aktuelle Konfiguration abrufen
+    const currentConfiguration = {}; // Aktuelle Konfiguration abrufen
     callback(null, currentConfiguration);
   }
 
@@ -39,4 +39,5 @@ class GiraHomeServerPlatform {
 }
 
 module.exports = GiraHomeServerPlatform;
+
 
