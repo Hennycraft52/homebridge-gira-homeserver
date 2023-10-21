@@ -49,16 +49,6 @@ password: Dein Gira HomeServer Passwort.
 Lizenz
 Dieses Projekt ist unter der MIT-Lizenz lizenziert. Siehe LICENSE für weitere Details.
 
-Mitwirkende
-Wir begrüßen Beiträge und Issues von der Community. Bitte beachte unsere Beitragshinweise für weitere Informationen.
+## Wiki
+[View Wiki](https://github.com/Hennycraft52/homebridge-gira-homeserver/wiki)
 
-Autor
-Dein Name
-Kontaktinformationen
-Unterstützung
-Wenn du Probleme mit dem Plugin hast, erstelle bitte ein Issue in diesem Repository. Wir helfen dir gerne weiter.
-
-perl
-Copy code
-
-Passe die READM
