@@ -15,11 +15,11 @@
   "license": "MIT",
   "dependencies": {
     "homebridge": "^0.4.0",
-    "andere_abhängigkeit": "^1.2.3" // Ersetze 1.2.3 durch die tatsächliche Versionsnummer
+    "andere_abhängigkeit": "^1.2.3" 
   },
   "engines": {
-    "node": ">=14.0.0", // Ersetze 14.0.0 durch die Mindestversion von Node.js
-    "homebridge": ">=1.0.0" // Ersetze 1.0.0 durch die Mindestversion von Homebridge
+    "node": ">=14.0.0", 
+    "homebridge": ">=1.0.0" 
   },
   "repository": {
     "type": "git",
