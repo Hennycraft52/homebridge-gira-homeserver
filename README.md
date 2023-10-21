@@ -23,16 +23,15 @@ Dies ist ein Homebridge-Plugin für die Integration deines Gira HomeServer in Ap
 
    ```bash
    npm install -g homebridge-gira-homeserver
+
 Konfiguriere das Plugin in deiner Homebridge-config.json-Datei. Siehe Konfiguration für Details.
 
 Starte Homebridge neu.
 
 Konfiguration
 Füge das Plugin zu deiner Homebridge-config.json-Datei hinzu. Hier ist ein Beispiel:
-
-json
-Copy code
-"platforms": [
+(
+ "platforms": [
   {
     "platform": "GiraHomeServer",
     "name": "Gira HomeServer",
@@ -41,24 +40,20 @@ Copy code
     "password": "dein_Passwort"
   }
 ]
+)
+
 platform: Der Name deiner Plattform.
 name: Der Anzeigename deiner Plattform in HomeKit.
 host: Die IP-Adresse oder der Hostname deines Gira HomeServers.
 username: Dein Gira HomeServer Benutzername.
 password: Dein Gira HomeServer Passwort.
+
+
 Lizenz
 Dieses Projekt ist unter der MIT-Lizenz lizenziert. Siehe LICENSE für weitere Details.
 
 Mitwirkende
 Wir begrüßen Beiträge und Issues von der Community. Bitte beachte unsere Beitragshinweise für weitere Informationen.
 
-Autor
-Dein Name
-Kontaktinformationen
-Unterstützung
-Wenn du Probleme mit dem Plugin hast, erstelle bitte ein Issue in diesem Repository. Wir helfen dir gerne weiter.
 
-perl
-Copy code
 
-Passe die READM
