@@ -10,11 +10,11 @@
   "author": "Dein Name",
   "license": "MIT",
   "dependencies": {
-    "homebridge": "^1.3.4",  
-    "andere_abhängigkeit": "^2.0.1" 
+    "homebridge": "^1.3.4",   
+    "andere_abhängigkeit": "^2.0.1"  
   },
   "engines": {
-    "node": ">=14.0.0", 
+    "node": ">=14.0.0",  
     "homebridge": ">=1.1.0" 
   },
   "repository": {
@@ -26,4 +26,3 @@
   },
   "homepage": "https://github.com/Hennycraft52/homebridge-gira-homeserver#readme"
 }
-
