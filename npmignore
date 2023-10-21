@@ -1,0 +1,8 @@
+# Ignoriere Beispiel- und Testdateien
+test/
+tests/
+example/
+
+# Ignoriere Markdown-Dateien, die nicht für NPM benötigt werden
+README.md
+CONTRIBUTING.md
