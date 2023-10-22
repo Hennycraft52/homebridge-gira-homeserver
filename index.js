@@ -4,18 +4,6 @@ const axios = require('axios');
 const PluginName = 'homebridge-gira-homeserver';
 const PlatformName = 'GiraHomeserverPlatform';
 
-// Beispielklasse für einen Schalter (ersetze dies durch deine eigenen Geräteklassen)
-class GiraSwitch {
-  constructor(log, name, channel) {
-    this.log = log;
-    this.name = name;
-    this.channel = channel;
-    // Füge hier die Initialisierung für deinen Schalter hinzu
-  }
-
-  // Implementiere Methoden, um den Schalter zu steuern
-}
-
 class GiraHomeserverPlatform {
   constructor(log, config, api) {
     this.log = log;
@@ -28,19 +16,33 @@ class GiraHomeserverPlatform {
 
     this.host = this.config.host;
 
-    // Hier kannst du deine Gira HomeServer-Integration initialisieren
+    // Initialize your Gira HomeServer integration here
+    this.initializeGiraHomeServer();
 
     // Register the platform to Homebridge
     this.api.registerPlatform(PluginName, PlatformName, this);
   }
 
+  initializeGiraHomeServer() {
+    // Implement your logic for interacting with the Gira IoT REST API here
+    // Use Axios or another HTTP library to make API requests
+    // For example:
+    axios.get(`http://${this.host}/api/someEndpoint`)
+      .then(response => {
+        // Process the API response and create Homebridge devices
+        // Use this.log to log information
+        // Create devices using this.api.registerPlatformAccessories
+      })
+      .catch(error => {
+        this.log.error(`Error while connecting to Gira HomeServer: ${error}`);
+      });
+  }
+
   accessories(callback) {
-    // Implementiere die accessories() Methode, um eine Liste von Geräten zurückzugeben
+    // Implement the accessories() method to return an array of devices
     const accessories = [];
 
-    // Beispiel: Füge einen Schalter hinzu (ersetze dies durch deine eigenen Geräte)
-    const switchAccessory = new GiraSwitch(this.log, 'Wohnzimmer Licht', 'de.gira.schema.channels.Switch/OnOff');
-    accessories.push(switchAccessory);
+    // Create and push devices to the accessories array
 
     callback(accessories);
   }
