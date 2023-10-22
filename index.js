@@ -1,51 +1,53 @@
-const Homebridge = require('homebridge');
-const GiraHomeServer = require('gira-home-server-library'); // Dies ist ein fiktives Beispiel. Du musst die richtige Bibliothek verwenden.
+const homebridge = require('homebridge');
+const axios = require('axios');
 
-class GiraHomeServerPlatform {
+const PluginName = 'homebridge-gira-homeserver';
+const PlatformName = 'GiraHomeserverPlatform';
+
+class GiraHomeserverPlatform {
   constructor(log, config, api) {
     this.log = log;
     this.config = config;
     this.api = api;
 
-    this.homebridgeAccessories = [];
+    if (!this.config.host) {
+      throw new Error('Please specify the Gira HomeServer host in your configuration.');
+    }
 
-    // Verbinde dich mit dem Gira HomeServer
-    this.giraHomeServer = new GiraHomeServer({
-      host: this.config.host,
-      username: this.config.username,
-      password: this.config.password,
-    });
+    this.host = this.config.host;
 
-    this.giraHomeServer.on('deviceDiscovered', this.handleDeviceDiscovery.bind(this));
+    // Initialize your Gira HomeServer integration here
+    this.initializeGiraHomeServer();
 
-    // Registriere die Plattform beim Homebridge
-    this.api.registerPlatform('GiraHomeServer', 'GiraHomeServer', this);
+    // Register the platform to Homebridge
+    this.api.registerPlatform(PluginName, PlatformName, this);
   }
 
-  configureAccessory(accessory) {
-    // Konfiguriere vorhandene Accessories, wenn nötig
-  }
-
-  handleDeviceDiscovery(device) {
-    // Hier kannst du ein Homebridge-Accessory für das gefundene Gerät erstellen
-    const accessory = new Homebridge.platformAccessory(device.name, Homebridge.hap.uuid.generate(device.id));
-    
-    // Konfiguriere das Accessory
-    // Zum Beispiel: accessory.addService(Homebridge.hap.Service.Switch, 'Schalter', 'SchalterUUID');
-
-    // Füge das Accessory zur Plattform hinzu
-    this.api.registerPlatformAccessories('GiraHomeServer', 'GiraHomeServer', [accessory]);
-
-    this.homebridgeAccessories.push(accessory);
+  initializeGiraHomeServer() {
+    // Implement your logic for interacting with the Gira IoT REST API here
+    // Use Axios or another HTTP library to make API requests
+    // For example:
+    axios.get(`http://${this.host}/api/someEndpoint`)
+      .then(response => {
+        // Process the API response and create Homebridge devices
+        // Use this.log to log information
+        // Create devices using this.api.registerPlatformAccessories
+      })
+      .catch(error => {
+        this.log.error(`Error while connecting to Gira HomeServer: ${error}`);
+      });
   }
 
   accessories(callback) {
-    // Gib die konfigurierten Accessories zurück
-    callback(this.homebridgeAccessories);
+    // Implement the accessories() method to return an array of devices
+    const accessories = [];
+
+    // Create and push devices to the accessories array
+
+    callback(accessories);
   }
 }
 
 module.exports = (api) => {
-  Homebridge = api.hap;
-  api.registerPlatform('GiraHomeServer', 'GiraHomeServer', GiraHomeServerPlatform);
+  homebridge.registerPlatform(PluginName, PlatformName, GiraHomeserverPlatform);
 };
