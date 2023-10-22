@@ -1,6 +1,6 @@
 {
   "name": "homebridge-gira-homeserver",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Ein Homebridge-Plugin zur Integration von Gira HomeServer in Apple HomeKit.",
   "main": "index.js",
   "scripts": {
