@@ -1,12 +1,20 @@
 const homebridge = require('homebridge');
-const GiraHomeserverConnect = require('./GiraHomeserverConnect');
+const axios = require('axios');
 
 const PluginName = 'homebridge-gira-homeserver';
 const PlatformName = 'GiraHomeserverPlatform';
 
-module.exports = (api) => {
-  api.registerPlatform(PluginName, PlatformName, GiraHomeserverPlatform);
-};
+// Beispielklasse für einen Schalter (ersetze dies durch deine eigenen Geräteklassen)
+class GiraSwitch {
+  constructor(log, name, channel) {
+    this.log = log;
+    this.name = name;
+    this.channel = channel;
+    // Füge hier die Initialisierung für deinen Schalter hinzu
+  }
+
+  // Implementiere Methoden, um den Schalter zu steuern
+}
 
 class GiraHomeserverPlatform {
   constructor(log, config, api) {
@@ -15,29 +23,29 @@ class GiraHomeserverPlatform {
     this.api = api;
 
     if (!this.config.host) {
-      throw new Error('Bitte geben Sie den Gira HomeServer-Host in der Konfiguration an.');
+      throw new Error('Please specify the Gira HomeServer host in your configuration.');
     }
 
     this.host = this.config.host;
 
-    this.giraServerConnect = new GiraHomeserverConnect(this.log, this.host);
+    // Hier kannst du deine Gira HomeServer-Integration initialisieren
 
-    // Entferne die folgende Zeile
-    // this.api.registerPlatform(PluginName, PlatformName, this);
-
-    this.api.on('didFinishLaunching', () => {
-      this.log('Die Gira HomeServer-Plattform wurde erfolgreich initialisiert.');
-    });
+    // Register the platform to Homebridge
+    this.api.registerPlatform(PluginName, PlatformName, this);
   }
 
   accessories(callback) {
+    // Implementiere die accessories() Methode, um eine Liste von Geräten zurückzugeben
     const accessories = [];
 
-    // Hier können Schalter (Switches) hinzugefügt werden
-    // Beispiel: Ein einfacher Lichtschalter
-    accessories.push(new GiraSwitch(this.log, 'Wohnzimmer Licht', 'de.gira.schema.channels.Switch/OnOff'));
+    // Beispiel: Füge einen Schalter hinzu (ersetze dies durch deine eigenen Geräte)
+    const switchAccessory = new GiraSwitch(this.log, 'Wohnzimmer Licht', 'de.gira.schema.channels.Switch/OnOff');
+    accessories.push(switchAccessory);
 
     callback(accessories);
   }
 }
 
+module.exports = (api) => {
+  api.registerPlatform(PluginName, PlatformName, GiraHomeserverPlatform);
+};
