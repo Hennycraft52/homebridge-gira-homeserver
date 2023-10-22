@@ -35,7 +35,7 @@ Füge das Plugin zu deiner Homebridge-config.json-Datei hinzu. Hier ist ein Beis
 
 "platforms": [
   {
-    "platform": "GiraHomeserverPlatorm",
+    "platform": "GiraHomeserverPlatform",
     "host": "IP_deines_Gira_HomeServers",
     "username": "dein_Benutzername",
     "password": "dein_Passwort"
