@@ -1,0 +1,6 @@
+{
+    "platform": "GiraHomeServer",
+    "host": "IP_deines_Gira_HomeServers",
+    "username": "dein_Benutzername",
+    "password": "dein_Passwort"
+  }
