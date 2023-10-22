@@ -49,5 +49,7 @@ class GiraHomeserverPlatform {
 }
 
 module.exports = (api) => {
-  homebridge.registerPlatform(homebridge-gira-homeserver, GiraHomeserverPlatform, GiraHomeserverPlatform);
+  api.registerPlatform(PluginName, PlatformName, GiraHomeserverPlatform);
+};
+
 };
