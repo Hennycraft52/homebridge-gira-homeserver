@@ -1,11 +1,17 @@
 const homebridge = require('homebridge');
-const axios = require('axios');
+const GiraHomeserverConnect = require('./GiraHomeserverConnect');
 
+// Die Plugin-Namen und -Plattformen
 const PluginName = 'homebridge-gira-homeserver';
 const PlatformName = 'GiraHomeserverPlatform';
 
-const GiraHomeserverConnect = require('./GiraHomeserverConnect');
+// Homebridge-Plugin initialisieren
+module.exports = (api) => {
+  // Register die GiraHomeserverPlatform bei Homebridge
+  api.registerPlatform(PluginName, PlatformName, GiraHomeserverPlatform);
+};
 
+// GiraHomeserverPlatform-Klasse
 class GiraHomeserverPlatform {
   constructor(log, config, api) {
     this.log = log;
@@ -13,41 +19,31 @@ class GiraHomeserverPlatform {
     this.api = api;
 
     if (!this.config.host) {
-      throw new Error('Please specify the Gira HomeServer host in your configuration.');
+      throw new Error('Bitte geben Sie den Gira HomeServer-Host in der Konfiguration an.');
     }
 
     this.host = this.config.host;
 
-    // Initialize your Gira HomeServer integration here
-    this.initializeGiraHomeServer();
+    // Initialize die Verbindung zum Gira HomeServer
+    this.giraServerConnect = new GiraHomeserverConnect(this.log, this.host);
 
-    // Register the platform to Homebridge
+    // Registriere die Plattform beim Homebridge
     this.api.registerPlatform(PluginName, PlatformName, this);
-  }
 
-  initializeGiraHomeServer() {
-    // Implement your logic for interacting with the Gira IoT REST API here
-    GiraHomeserverConnect.connect(this.host, this.log)
-      .then(response => {
-        // Process the API response and create Homebridge devices
-        // Use this.log to log information
-        // Create devices using this.api.registerPlatformAccessories
-      })
-      .catch(error => {
-        this.log.error(`Error while connecting to Gira HomeServer: ${error}`);
-      });
+    // Callback für die Plattform
+    this.api.on('didFinishLaunching', () => {
+      this.log('Die Gira HomeServer-Plattform wurde erfolgreich initialisiert.');
+    });
   }
 
   accessories(callback) {
-    // Implement the accessories() method to return an array of devices
+    // Implementiere die accessories-Methode, um Geräte hinzuzufügen
     const accessories = [];
 
-    // Create and push devices to the accessories array
+    // Hier können Schalter (Switches) hinzugefügt werden
+    // Beispiel: Ein einfacher Lichtschalter
+    accessories.push(new GiraSwitch(this.log, 'Wohnzimmer Licht', 'de.gira.schema.channels.Switch/OnOff'));
 
     callback(accessories);
   }
 }
-
-module.exports = (api) => {
-  api.registerPlatform(PluginName, PlatformName, GiraHomeserverPlatform);
-};
