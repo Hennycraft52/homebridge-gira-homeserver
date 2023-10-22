@@ -4,7 +4,7 @@
 ![GitHub](https://img.shields.io/github/license/dein-benutzername/homebridge-gira-homeserver)
 
 
-Dies ist ein Homebridge-Plugin für die Integration deines Gira HomeServer in Apple HomeKit. Mit diesem Plugin kannst du deine Gira-Geräte und -Services in deinem Apple HomeKit-Ökosystem steuern.
+Dies ist ein Homebridge-Plugin für die Integration deines Gira HomeServer in Apple HomeKit. Mit diesem Plugin kannst du deine Gira-Geräte und -Services in deinem Apple HomeKit-Ökosystem steuern. (beta)
 
 ## Features
 
