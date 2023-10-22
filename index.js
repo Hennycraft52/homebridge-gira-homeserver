@@ -1,17 +1,13 @@
 const homebridge = require('homebridge');
 const GiraHomeserverConnect = require('./GiraHomeserverConnect');
 
-// Die Plugin-Namen und -Plattformen
 const PluginName = 'homebridge-gira-homeserver';
 const PlatformName = 'GiraHomeserverPlatform';
 
-// Homebridge-Plugin initialisieren
 module.exports = (api) => {
-  // Register die GiraHomeserverPlatform bei Homebridge
   api.registerPlatform(PluginName, PlatformName, GiraHomeserverPlatform);
 };
 
-// GiraHomeserverPlatform-Klasse
 class GiraHomeserverPlatform {
   constructor(log, config, api) {
     this.log = log;
@@ -24,20 +20,17 @@ class GiraHomeserverPlatform {
 
     this.host = this.config.host;
 
-    // Initialize die Verbindung zum Gira HomeServer
     this.giraServerConnect = new GiraHomeserverConnect(this.log, this.host);
 
-    // Registriere die Plattform beim Homebridge
-    this.api.registerPlatform(PluginName, PlatformName, this);
+    // Entferne die folgende Zeile
+    // this.api.registerPlatform(PluginName, PlatformName, this);
 
-    // Callback für die Plattform
     this.api.on('didFinishLaunching', () => {
       this.log('Die Gira HomeServer-Plattform wurde erfolgreich initialisiert.');
     });
   }
 
   accessories(callback) {
-    // Implementiere die accessories-Methode, um Geräte hinzuzufügen
     const accessories = [];
 
     // Hier können Schalter (Switches) hinzugefügt werden
@@ -47,3 +40,4 @@ class GiraHomeserverPlatform {
     callback(accessories);
   }
 }
+
