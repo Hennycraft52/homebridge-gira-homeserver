@@ -15,12 +15,15 @@ class GiraHomeserverPlatform {
     }
 
     this.host = this.config.host;
+    this.accessories = [];
 
     // Initialize your Gira HomeServer integration here
     this.initializeGiraHomeServer();
 
-    // Register the platform to Homebridge
-    this.api.registerPlatform(PluginName, PlatformName, this);
+    // Listen for the "didFinishLaunching" event to register the platform
+    this.api.on('didFinishLaunching', () => {
+      this.registerPlatform();
+    });
   }
 
   initializeGiraHomeServer() {
@@ -36,6 +39,13 @@ class GiraHomeserverPlatform {
       .catch(error => {
         this.log.error(`Error while connecting to Gira HomeServer: ${error}`);
       });
+  }
+
+  registerPlatform() {
+    // Check if the platform is already registered, and only register once
+    if (!this.api.platforms[PluginName]) {
+      this.api.registerPlatform(PluginName, PlatformName, this);
+    }
   }
 
   accessories(callback) {
