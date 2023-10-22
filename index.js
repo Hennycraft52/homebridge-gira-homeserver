@@ -52,4 +52,3 @@ module.exports = (api) => {
   api.registerPlatform(PluginName, PlatformName, GiraHomeserverPlatform);
 };
 
-};
