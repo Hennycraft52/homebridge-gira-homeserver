@@ -1,28 +1,26 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "properties": {
-    "platform": {
-      "type": "string",
-      "enum": ["GiraHomeServer"],
-      "default": "GiraHomeServer",
-      "description": "Name der Plattform (z. B. GiraHomeServer)"
-    },
-    "host": {
-      "type": "string",
-      "default": "192.168.1.100",
-      "description": "IP-Adresse oder Hostname des Gira HomeServers"
-    },
-    "username": {
-      "type": "string",
-      "default": "admin",
-      "description": "Benutzername für die Verbindung zum Gira HomeServer"
-    },
-    "password": {
-      "type": "string",
-      "default": "password",
-      "description": "Passwort für die Verbindung zum Gira HomeServer"
+  "pluginAlias": "homebridge-gira-homeserver",
+  "pluginType": "platform",
+  "singular": true,
+  "schema": {
+    "type": "object",
+    "properties": {
+      "host": {
+        "title": "Gira HomeServer Host",
+        "type": "string",
+        "required": true,
+        "default": "http://your-gira-homeserver-address"
+      },
+      "username": {
+        "title": "Username",
+        "type": "string",
+        "required": true
+      },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "required": true
+      }
     }
-  },
-  "required": ["platform"]
+  }
 }
