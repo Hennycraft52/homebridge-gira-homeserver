@@ -49,6 +49,6 @@ class GiraHomeserverPlatform {
 }
 
 module.exports = (api) => {
+  // Registration of the platform should be done within this function
   api.registerPlatform(PluginName, PlatformName, GiraHomeserverPlatform);
 };
-
