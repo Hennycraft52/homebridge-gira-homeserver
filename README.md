@@ -36,7 +36,6 @@ Füge das Plugin zu deiner Homebridge-config.json-Datei hinzu. Hier ist ein Beis
 "platforms": [
   {
     "platform": "GiraHomeServer",
-    "name": "Gira HomeServer",
     "host": "IP_deines_Gira_HomeServers",
     "username": "dein_Benutzername",
     "password": "dein_Passwort"
@@ -46,7 +45,6 @@ Füge das Plugin zu deiner Homebridge-config.json-Datei hinzu. Hier ist ein Beis
 ## Erklährung
 ````
 platform: Der Name deiner Plattform.
-name: Der Anzeigename deiner Plattform in HomeKit.
 host: Die IP-Adresse oder der Hostname deines Gira HomeServers.
 username: Dein Gira HomeServer Benutzername.
 password: Dein Gira HomeServer Passwort.
