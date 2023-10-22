@@ -5,22 +5,23 @@
     "platform": {
       "type": "string",
       "enum": ["GiraHomeServer"],
-      "default": "GiraHomeServer"
+      "default": "GiraHomeServer",
+      "description": "Name der Plattform (z. B. GiraHomeServer)"
     },
     "host": {
       "type": "string",
-      "description": "IP-Adresse oder Hostname des Gira HomeServers",
-      "default": "192.168.1.100"  
+      "default": "192.168.1.100",
+      "description": "IP-Adresse oder Hostname des Gira HomeServers"
     },
     "username": {
       "type": "string",
-      "description": "Benutzername für die Verbindung zum Gira HomeServer",
-      "default": "admin" 
+      "default": "admin",
+      "description": "Benutzername für die Verbindung zum Gira HomeServer"
     },
     "password": {
       "type": "string",
-      "description": "Passwort für die Verbindung zum Gira HomeServer",
-      "default": "password"
+      "default": "password",
+      "description": "Passwort für die Verbindung zum Gira HomeServer"
     }
   },
   "required": ["platform"]
