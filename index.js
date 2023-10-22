@@ -1,8 +1,10 @@
 const homebridge = require('homebridge');
-const GiraHomeserverConnect = require('./GiraHomeserverConnect');
+const axios = require('axios');
 
 const PluginName = 'homebridge-gira-homeserver';
 const PlatformName = 'GiraHomeserverPlatform';
+
+const GiraHomeserverConnect = require('./GiraHomeserverConnect');
 
 class GiraHomeserverPlatform {
   constructor(log, config, api) {
@@ -17,10 +19,23 @@ class GiraHomeserverPlatform {
     this.host = this.config.host;
 
     // Initialize your Gira HomeServer integration here
-    new GiraHomeserverConnect(this.log, this.host, this.api);
+    this.initializeGiraHomeServer();
 
     // Register the platform to Homebridge
     this.api.registerPlatform(PluginName, PlatformName, this);
+  }
+
+  initializeGiraHomeServer() {
+    // Implement your logic for interacting with the Gira IoT REST API here
+    GiraHomeserverConnect.connect(this.host, this.log)
+      .then(response => {
+        // Process the API response and create Homebridge devices
+        // Use this.log to log information
+        // Create devices using this.api.registerPlatformAccessories
+      })
+      .catch(error => {
+        this.log.error(`Error while connecting to Gira HomeServer: ${error}`);
+      });
   }
 
   accessories(callback) {
