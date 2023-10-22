@@ -18,6 +18,9 @@ class GiraHomeserverPlatform {
 
     // Initialize your Gira HomeServer integration here
     this.initializeGiraHomeServer();
+
+    // Register the platform to Homebridge
+    this.api.registerPlatform(PluginName, PlatformName, this);
   }
 
   initializeGiraHomeServer() {
@@ -28,7 +31,7 @@ class GiraHomeserverPlatform {
       .then(response => {
         // Process the API response and create Homebridge devices
         // Use this.log to log information
-        // Create devices using this.api.platformAccessory
+        // Create devices using this.api.registerPlatformAccessories
       })
       .catch(error => {
         this.log.error(`Error while connecting to Gira HomeServer: ${error}`);
@@ -48,3 +51,4 @@ class GiraHomeserverPlatform {
 module.exports = (api) => {
   api.registerPlatform(PluginName, PlatformName, GiraHomeserverPlatform);
 };
+
