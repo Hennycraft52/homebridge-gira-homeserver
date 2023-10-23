@@ -1,27 +1,26 @@
 {
-  "pluginAlias": "homebridge-plugin-ui",
+  "pluginAlias": "homebridge-gira-homeserver",
   "pluginType": "platform",
   "singular": true,
   "schema": {
     "type": "object",
-  "properties": {
-    "username": {
-      "title": "Benutzername",
-      "type": "string",
-      "required": true,
-      "default": "default-username"
-    },
-    "password": {
-      "title": "Passwort",
-      "type": "string",
-      "required": true,
-      "default": "default-password"
-    },
-    "address": {
-      "title": "Serveradresse",
-      "type": "string",
-      "required": true,
-      "default": "http://default-server-address"
+    "properties": {
+      "host": {
+        "title": "Gira HomeServer Host",
+        "type": "string",
+        "required": true,
+        "default": "http://your-gira-homeserver-address"
+      },
+      "username": {
+        "title": "Username",
+        "type": "string",
+        "required": true
+      },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "required": true
+      }
     }
   }
 }
