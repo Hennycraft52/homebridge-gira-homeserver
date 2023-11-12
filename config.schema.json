@@ -20,6 +20,11 @@
         "title": "Password",
         "type": "string",
         "required": true
+      },
+      "token": {
+        "title": "Token",
+        "type": "string",
+        "required": false
       }
     }
   }
