@@ -1,4 +1,4 @@
-const axios = require('axios');
+const GiraController = require('./GiraController'); // Stellen Sie sicher, dass der Pfad korrekt ist
 
 class GiraHomeServerPlatform {
   constructor(log, config) {
@@ -10,42 +10,22 @@ class GiraHomeServerPlatform {
 
     if (!this.token) {
       // Wenn kein Token vorhanden ist, registrieren Sie den Client und speichern Sie den Token
-      this.registerClient();
+      this.registerClientAndInitialize();
     } else {
       // Wenn ein Token vorhanden ist, führen Sie die normale Logik fort
       this.initialize();
     }
   }
 
-  registerClient() {
-    const authHeader = `Basic ${Buffer.from(`${this.username}:${this.password}`).toString('base64')}`;
+  registerClientAndInitialize() {
+    const giraController = new GiraController(this.log, this.host, this.username, this.password);
 
-    const clientRegistrationData = {
-      client: 'de.example.myapp',
-    };
+    // Speichern Sie den Token in der Konfiguration
+    this.token = giraController.token;
+    this.saveTokenToConfig();
 
-    axios.post(`${this.host}/api/v2/clients`, clientRegistrationData, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': authHeader,
-        'Cache-Control': 'no-cache',
-      },
-    })
-      .then((response) => {
-        // Erfolgreiche Antwort
-        this.token = response.data.token;
-        this.log('Client erfolgreich registriert. Token:', this.token);
-
-        // Speichern Sie den Token in der Konfiguration
-        this.saveTokenToConfig();
-
-        // Initialisieren Sie Ihr Plugin nach der erfolgreichen Registrierung
-        this.initialize();
-      })
-      .catch((error) => {
-        // Fehler bei der Anfrage
-        this.log.error('Fehler bei der Client-Registrierung:', error.message);
-      });
+    // Initialisieren Sie Ihr Plugin nach der erfolgreichen Registrierung
+    this.initialize();
   }
 
   saveTokenToConfig() {
@@ -57,8 +37,19 @@ class GiraHomeServerPlatform {
   initialize() {
     // Führen Sie hier die normale Initialisierung für Ihr Plugin durch
     // Verwenden Sie this.host, this.username, this.password und this.token nach Bedarf
+
+    // Beispiel: Schalten Sie ein Gira-Gerät mit ID '123' ein
+    this.turnOnDevice('123');
+  }
+
+  turnOnDevice(deviceId) {
+    // Hier können Sie Ihre Steuerungslogik implementieren
+    // Rufen Sie die entsprechende Methode in GiraController auf
+    const giraController = new GiraController(this.log, this.host, this.username, this.password);
+    giraController.turnOnDevice(deviceId);
   }
 }
 
 // Registrieren Sie das Plugin
 homebridge.registerPlatform('homebridge-gira-homeserver', 'GiraHomeServer', GiraHomeServerPlatform);
+
