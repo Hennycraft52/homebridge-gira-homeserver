@@ -1,31 +1,58 @@
 {
-  "pluginAlias": "homebridge-gira-homeserver",
-  "pluginType": "platform",
-  "singular": true,
-  "schema": {
-    "type": "object",
-    "properties": {
-      "host": {
-        "title": "Gira HomeServer Host",
-        "type": "string",
-        "required": true,
-        "default": "http://your-gira-homeserver-address"
+  "type": "object",
+  "properties": {
+    "pluginAlias": {
+      "type": "string",
+      "enum": ["homebridge-gira-homeserver"]
+    },
+    "pluginType": {
+      "type": "string",
+      "enum": ["platform"]
+    },
+    "singular": {
+      "type": "boolean",
+      "default": true
+    },
+    "schema": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "title": "Gira HomeServer Host",
+          "type": "string",
+          "required": true,
+          "default": "http://your-gira-homeserver-address"
+        },
+        "username": {
+          "title": "Username",
+          "type": "string",
+          "required": true
+        },
+        "password": {
+          "title": "Password",
+          "type": "string",
+          "required": true
+        },
+        "lights": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Light Name"
+              },
+              "id": {
+                "type": "string",
+                "description": "Light ID"
+              }
+            },
+            "required": ["name", "id"]
+          },
+          "description": "List of lights to control"
+        }
       },
-      "username": {
-        "title": "Username",
-        "type": "string",
-        "required": true
-      },
-      "password": {
-        "title": "Password",
-        "type": "string",
-        "required": true
-      },
-      "token": {
-        "title": "Token",
-        "type": "string",
-        "required": false
-      }
+      "required": ["host", "username", "password", "lights"]
     }
-  }
+  },
+  "required": ["pluginAlias", "pluginType", "singular", "schema"]
 }
