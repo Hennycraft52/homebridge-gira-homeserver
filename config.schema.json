@@ -49,9 +49,14 @@
             "required": ["name", "id"]
           },
           "description": "List of lights to control"
+        },
+        "refreshInterval": {
+          "title": "Refresh Interval (seconds)",
+          "type": "integer",
+          "default": 20
         }
       },
-      "required": ["host", "username", "password", "lights"]
+      "required": ["host", "username", "password", "lights", "refreshInterval"]
     }
   },
   "required": ["pluginAlias", "pluginType", "singular", "schema"]
