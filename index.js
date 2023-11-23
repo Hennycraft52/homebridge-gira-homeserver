@@ -103,6 +103,14 @@ class GiraLightAccessory {
     request(endpoint)
       .then(response => {
         this.log.debug('Toggle light response:', response);
+
+        // If the toggle was successful, update the internal state
+        this.getOn((error, value) => {
+          if (!error) {
+            this.service.getCharacteristic(Characteristic.On).updateValue(value);
+          }
+        });
+
         callback(null);
       })
       .catch(error => {
@@ -120,5 +128,17 @@ class GiraLightAccessory {
     callback(null, on);
   }
 
-  setOn(value
+  setOn(value, callback) {
+    // Implement the logic to set the On state of the light
+    // ...
+
+    // Example: Toggle the light state
+    this.toggleLight(value, callback);
+  }
+}
+
+// Export the platform to Homebridge
+module.exports = (api) => {
+  api.registerPlatform('homebridge-gira-homeserver', 'GiraHomeServer', GiraHomeServerPlatform);
+};
 
