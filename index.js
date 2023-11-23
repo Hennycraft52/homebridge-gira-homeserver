@@ -1,55 +1,124 @@
-const GiraController = require('./GiraController'); // Stellen Sie sicher, dass der Pfad korrekt ist
+const request = require('request-promise');
 
 class GiraHomeServerPlatform {
-  constructor(log, config) {
+  constructor(log, config, api) {
     this.log = log;
-    this.host = config.host;
-    this.username = config.username;
-    this.password = config.password;
-    this.token = config.token;
+    this.config = config;
+    this.api = api;
+    this.accessories = [];
 
-    if (!this.token) {
-      // Wenn kein Token vorhanden ist, registrieren Sie den Client und speichern Sie den Token
-      this.registerClientAndInitialize();
+    if (this.config) {
+      this.host = this.config.host;
+      this.username = this.config.username;
+      this.password = this.config.password;
+      this.lights = this.config.lights || [];
+      this.refreshInterval = this.config.refreshInterval || 20;
+
+      this.log.debug('Configuring Gira HomeServer platform:', this.host, this.username);
+
+      // Register the platform
+      this.api.registerPlatform('homebridge-gira-homeserver', 'GiraHomeServer', this);
+
+      // Start the refresh interval
+      setInterval(() => {
+        this.refreshAccessories();
+      }, this.refreshInterval * 1000);
     } else {
-      // Wenn ein Token vorhanden ist, führen Sie die normale Logik fort
-      this.initialize();
+      this.log.error('Missing configuration for Gira HomeServer platform. Please check your configuration file.');
     }
   }
 
-  registerClientAndInitialize() {
-    const giraController = new GiraController(this.log, this.host, this.username, this.password);
+  accessories(callback) {
+    this.log.debug('Discovering accessories...');
+    const accessories = [];
 
-    // Speichern Sie den Token in der Konfiguration
-    this.token = giraController.token;
-    this.saveTokenToConfig();
+    // Create an accessory for each light
+    for (const light of this.lights) {
+      const accessory = new GiraLightAccessory(this.log, light, this.host, this.username, this.password);
+      accessories.push(accessory);
+      this.accessories.push(accessory);
+    }
 
-    // Initialisieren Sie Ihr Plugin nach der erfolgreichen Registrierung
-    this.initialize();
+    callback(accessories);
   }
 
-  saveTokenToConfig() {
-    // Fügen Sie den Token zur Konfiguration hinzu und speichern Sie die Konfiguration
-    this.config.token = this.token;
-    this.saveConfig();
-  }
-
-  initialize() {
-    // Führen Sie hier die normale Initialisierung für Ihr Plugin durch
-    // Verwenden Sie this.host, this.username, this.password und this.token nach Bedarf
-
-    // Beispiel: Schalten Sie ein Gira-Gerät mit ID '123' ein
-    this.turnOnDevice('123');
-  }
-
-  turnOnDevice(deviceId) {
-    // Hier können Sie Ihre Steuerungslogik implementieren
-    // Rufen Sie die entsprechende Methode in GiraController auf
-    const giraController = new GiraController(this.log, this.host, this.username, this.password);
-    giraController.turnOnDevice(deviceId);
+  refreshAccessories() {
+    this.log.debug('Refreshing accessories...');
+    for (const accessory of this.accessories) {
+      accessory.refreshState();
+    }
   }
 }
 
-// Registrieren Sie das Plugin
-homebridge.registerPlatform('homebridge-gira-homeserver', 'GiraHomeServer', GiraHomeServerPlatform);
+class GiraLightAccessory {
+  constructor(log, config, host, username, password) {
+    this.log = log;
+    this.config = config;
+    this.host = host;
+    this.username = username;
+    this.password = password;
+    this.service = null;
+
+    if (this.config) {
+      this.name = this.config.name;
+      this.id = this.config.id;
+
+      // You can perform additional setup here if needed
+
+      this.log.debug('Configuring Gira Light accessory:', this.name, this.id);
+    } else {
+      this.log.error('Missing configuration for Gira Light accessory. Please check your configuration file.');
+    }
+  }
+
+  getServices() {
+    // Implement the services for the light accessory
+    // ...
+
+    // Example service
+    this.service = new Service.Lightbulb(this.name);
+    this.service.getCharacteristic(Characteristic.On)
+      .on('get', this.getOn.bind(this))
+      .on('set', this.setOn.bind(this));
+
+    return [this.service];
+  }
+
+  refreshState() {
+    // Implement the logic to refresh the state of the light accessory
+    // ...
+
+    // Example: Update the On state every refresh interval
+    this.getOn((error, value) => {
+      if (!error) {
+        this.service.getCharacteristic(Characteristic.On).updateValue(value);
+      }
+    });
+  }
+
+  // Example method to toggle the light
+  toggleLight(on, callback) {
+    const endpoint = `https://${this.host}/endpoints/call?key=${this.id}&method=toggle&value=${on ? 1 : 0}&user=${this.username}&pw=${this.password}`;
+
+    request(endpoint)
+      .then(response => {
+        this.log.debug('Toggle light response:', response);
+        callback(null);
+      })
+      .catch(error => {
+        this.log.error('Error toggling light:', error.message);
+        callback(error);
+      });
+  }
+
+  getOn(callback) {
+    // Implement the logic to get the On state of the light
+    // ...
+
+    // Example: Return a hardcoded value for demonstration purposes
+    const on = true;
+    callback(null, on);
+  }
+
+  setOn(value
 
