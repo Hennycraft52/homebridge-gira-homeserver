@@ -56,7 +56,8 @@
           "default": 20
         }
       },
-      "required": ["host", "username", "password", "lights", "refreshInterval"]
+      "required": ["host", "username", "password", "lights", "refreshInterval"],
+      "additionalProperties": false
     }
   },
   "required": ["pluginAlias", "pluginType", "singular", "schema"]
