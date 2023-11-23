@@ -1,57 +1,43 @@
-# (!Beta!) Gira HomeServer Homebridge Plugin
+# Homebridge Gira HomeServer Plugin
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/dein-benutzername/homebridge-gira-homeserver/CI)
-![GitHub](https://img.shields.io/github/license/dein-benutzername/homebridge-gira-homeserver)
+<img src="https://github.com/homebridge/branding/raw/latest/logos/homebridge-wordmark-logo-vertical.png" width="150">
 
 
-Dies ist ein Homebridge-Plugin für die Integration deines Gira HomeServer in Apple HomeKit. Mit diesem Plugin kannst du deine Gira-Geräte und -Services in deinem Apple HomeKit-Ökosystem steuern. (beta)
-
-## Features
-
-- Unterstützung für Gira HomeServer
-- Integration von Gira-Geräten und -Services in HomeKit
-- Einfache Konfiguration über die Homebridge-UI
-
-## Voraussetzungen
-
-- Eine funktionierende Homebridge-Installation
-- Einen Gira HomeServer in deinem Netzwerk
-- Node.js und npm auf deinem Homebridge-Host
+Homebridge Plugin for integrating Gira HomeServer with HomeKit.
 
 ## Installation
 
-1. Installiere das Plugin über npm:
+1. Install Homebridge if you haven't already:
 
-   ```bash
-   npm install -g homebridge-gira-homeserver
-Konfiguriere das Plugin in deiner Homebridge-config.json-Datei. Siehe Konfiguration für Details.
+````ash
+npm install -g homebridge
+````
 
-Starte Homebridge neu.
+Install the Gira HomeServer Plugin:
+````
+npm install -g homebridge-gira-homeserver
+````
+## Configuration
+Add the platform to your config.json file:
 
-Konfiguration
-Füge das Plugin zu deiner Homebridge-config.json-Datei hinzu. Hier ist ein Beispiel:
-
-````json
-
+````
 "platforms": [
   {
-    "platform": "GiraHomeserverPlatform",
-    "host": "IP_deines_Gira_HomeServers",
-    "username": "dein_Benutzername",
-    "password": "dein_Passwort"
+    "platform": "GiraHomeServer",
+    "name": "Gira HomeServer",
+    "lights": [
+      {"name": "Light 1", "id": "1_1_13"},
+      {"name": "Light 2", "id": "1_1_14"},
+      {"name": "Light 3", "id": "1_1_15"}
+    ],
+    "serverIP": "ip",
+    "username": "bn",
+    "password": "pw"
   }
 ]
 ````
-## Erklährung
-````
-platform: Der Name deiner Plattform.
-host: Die IP-Adresse oder der Hostname deines Gira HomeServers.
-username: Dein Gira HomeServer Benutzername.
-password: Dein Gira HomeServer Passwort.
-````
-## Lizenz
-Dieses Projekt ist unter der MIT-Lizenz lizenziert. Siehe LICENSE für weitere Details.
+Adjust the configuration according to your Gira HomeServer installation.
 
-## Wiki
-[View Wiki](https://github.com/Hennycraft52/homebridge-gira-homeserver/wiki)
+License
+This project is licensed under the MIT License.
 
