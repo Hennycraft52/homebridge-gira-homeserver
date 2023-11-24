@@ -16,13 +16,13 @@ class GiraHomeServerPlatform {
 
       this.log.debug('Configuring Gira HomeServer platform:', this.host, this.username);
 
-      // Register the platform
-      this.api.registerPlatform('homebridge-gira-homeserver', 'GiraHomeServer', this);
-
       // Start the refresh interval
       setInterval(() => {
         this.refreshAccessories();
       }, this.refreshInterval * 1000);
+
+      // Register the platform
+      this.api.registerPlatform('homebridge-gira-homeserver', 'GiraHomeServer', this);
     } else {
       this.log.error('Missing configuration for Gira HomeServer platform. Please check your configuration file.');
     }
@@ -120,12 +120,21 @@ class GiraLightAccessory {
   }
 
   getOn(callback) {
-    // Implement the logic to get the On state of the light
-    // ...
+    const endpoint = `https://${this.host}/endpoints/call?key=${this.id}&method=get&user=${this.username}&pw=${this.password}`;
 
-    // Example: Return a hardcoded value for demonstration purposes
-    const on = true;
-    callback(null, on);
+    request(endpoint)
+      .then(response => {
+        this.log.debug('Get light state response:', response);
+
+        // Parse the response to determine the current state
+        const currentState = parseResponseToState(response);
+
+        callback(null, currentState);
+      })
+      .catch(error => {
+        this.log.error('Error getting light state:', error.message);
+        callback(error);
+      });
   }
 
   setOn(value, callback) {
@@ -134,6 +143,17 @@ class GiraLightAccessory {
 
     // Example: Toggle the light state
     this.toggleLight(value, callback);
+  }
+}
+
+function parseResponseToState(response) {
+  try {
+    const parsedResponse = JSON.parse(response);
+    // Hier gehen wir davon aus, dass der Status im JSON als true oder false gespeichert ist
+    return parsedResponse.status === 'on';
+  } catch (error) {
+    // Fehler beim Parsen der Antwort
+    return false;
   }
 }
 
