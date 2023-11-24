@@ -1,4 +1,5 @@
 const request = require('request-promise');
+const { Service, Characteristic } = require('homebridge');
 
 class GiraHomeServerPlatform {
   constructor(log, config, api) {
@@ -7,10 +8,14 @@ class GiraHomeServerPlatform {
     this.api = api;
     this.accessories = [];
 
-    // Warten Sie auf die Homebridge-Initialisierung
-    this.api.on('didFinishLaunching', () => {
-      this.initialize();
-    });
+    if (this.api) {
+      // Warten Sie auf die Homebridge-Initialisierung
+      this.api.on('didFinishLaunching', () => {
+        this.initialize();
+      });
+    } else {
+      this.log.error('Homebridge API is not available. Unable to initialize the plugin.');
+    }
   }
 
   initialize() {
@@ -29,7 +34,11 @@ class GiraHomeServerPlatform {
       }, this.refreshInterval * 1000);
 
       // Register the platform
-      this.api.registerPlatform('homebridge-gira-homeserver', 'GiraHomeServer', this);
+      if (this.api) {
+        this.api.registerPlatform('homebridge-gira-homeserver', 'GiraHomeServer', this);
+      } else {
+        this.log.error('Homebridge API is not available. Unable to register the platform.');
+      }
     } else {
       this.log.error('Missing configuration for Gira HomeServer platform. Please check your configuration file.');
     }
@@ -93,21 +102,28 @@ class GiraLightAccessory {
 
   refreshState() {
     // Implement the logic to refresh the state of the light accessory
-    // ...
+    const getEndpoint = `https://${this.host}/endpoints/call?key=${this.id}&method=get&user=${this.username}&pw=${this.password}`;
 
-    // Example: Update the On state every refresh interval
-    this.getOn((error, value) => {
-      if (!error) {
-        this.service.getCharacteristic(Characteristic.On).updateValue(value);
-      }
-    });
+    request(getEndpoint)
+      .then(response => {
+        this.log.debug('Refresh light state response:', response);
+
+        // Use the parseResponseToState function to determine the current state
+        const currentState = parseResponseToState(response);
+
+        // Update the state in HomeKit
+        this.service.getCharacteristic(Characteristic.On).updateValue(currentState);
+      })
+      .catch(error => {
+        this.log.error('Error refreshing light state:', error.message);
+      });
   }
 
   // Example method to toggle the light
   toggleLight(on, callback) {
-    const endpoint = `https://${this.host}/endpoints/call?key=${this.id}&method=toggle&value=${on ? 1 : 0}&user=${this.username}&pw=${this.password}`;
+    const toggleEndpoint = `https://${this.host}/endpoints/call?key=${this.id}&method=toggle&value=${on ? 1 : 0}&user=${this.username}&pw=${this.password}`;
 
-    request(endpoint)
+    request(toggleEndpoint)
       .then(response => {
         this.log.debug('Toggle light response:', response);
 
@@ -127,9 +143,9 @@ class GiraLightAccessory {
   }
 
   getOn(callback) {
-    const endpoint = `https://${this.host}/endpoints/call?key=${this.id}&method=get&user=${this.username}&pw=${this.password}`;
+    const getEndpoint = `https://${this.host}/endpoints/call?key=${this.id}&method=get&user=${this.username}&pw=${this.password}`;
 
-    request(endpoint)
+    request(getEndpoint)
       .then(response => {
         this.log.debug('Get light state response:', response);
 
@@ -153,8 +169,18 @@ class GiraLightAccessory {
   }
 }
 
+function parseResponseToState(response) {
+  try {
+    const parsedResponse = JSON.parse(response);
+    // Assuming the status is stored in the JSON as true or false
+    return parsedResponse.status === 'on';
+  } catch (error) {
+    // Error parsing the response
+    return false;
+  }
+}
+
 // Export the platform to Homebridge
 module.exports = (api) => {
-  new GiraHomeServerPlatform(api);
+  return new GiraHomeServerPlatform(api);
 };
-
