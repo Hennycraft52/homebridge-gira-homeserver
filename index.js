@@ -1,27 +1,23 @@
-class GiraLightAccessory {
-  constructor(log, config, host, username, password) {
-    this.log = log; // Stellen Sie sicher, dass diese Zeile vorhanden ist
+class GiraHomeServerPlatform {
+  constructor(log, config, api) {
+    this.log = log;
     this.config = config;
-    this.host = host;
-    this.username = username;
-    this.password = password;
-    this.service = null;
+    this.api = api;
+    this.accessories = [];
 
-    if (this.config) {
-      this.name = this.config.name;
-      this.id = this.config.id;
-
-      // Weitere Initialisierung hier, falls erforderlich
-
-      this.log.debug('Configuring Gira Light accessory:', this.name, this.id);
+    if (this.api) {
+      // Warten Sie auf die Homebridge-Initialisierung
+      this.api.on('didFinishLaunching', () => {
+        this.initialize();
+      });
     } else {
-      this.log.error('Missing configuration for Gira Light accessory. Please check your configuration file.');
+      this.log.error('Homebridge API is not available. Unable to initialize the plugin.');
     }
   }
 
   initialize() {
     if (this.config) {
-      this.host = this.config.host;
+      this.host = this.config.serverIP;
       this.username = this.config.username;
       this.password = this.config.password;
       this.lights = this.config.lights || [];
@@ -80,7 +76,7 @@ class GiraLightAccessory {
       this.name = this.config.name;
       this.id = this.config.id;
 
-      // You can perform additional setup here if needed
+      // Weitere Initialisierung hier, falls erforderlich
 
       this.log.debug('Configuring Gira Light accessory:', this.name, this.id);
     } else {
@@ -89,10 +85,6 @@ class GiraLightAccessory {
   }
 
   getServices() {
-    // Implement the services for the light accessory
-    // ...
-
-    // Example service
     this.service = new Service.Lightbulb(this.name);
     this.service.getCharacteristic(Characteristic.On)
       .on('get', this.getOn.bind(this))
@@ -102,17 +94,12 @@ class GiraLightAccessory {
   }
 
   refreshState() {
-    // Implement the logic to refresh the state of the light accessory
     const getEndpoint = `https://${this.host}/endpoints/call?key=${this.id}&method=get&user=${this.username}&pw=${this.password}`;
 
     request(getEndpoint)
       .then(response => {
         this.log.debug('Refresh light state response:', response);
-
-        // Use the parseResponseToState function to determine the current state
         const currentState = parseResponseToState(response);
-
-        // Update the state in HomeKit
         this.service.getCharacteristic(Characteristic.On).updateValue(currentState);
       })
       .catch(error => {
@@ -120,15 +107,12 @@ class GiraLightAccessory {
       });
   }
 
-  // Example method to toggle the light
   toggleLight(on, callback) {
     const toggleEndpoint = `https://${this.host}/endpoints/call?key=${this.id}&method=toggle&value=${on ? 1 : 0}&user=${this.username}&pw=${this.password}`;
 
     request(toggleEndpoint)
       .then(response => {
         this.log.debug('Toggle light response:', response);
-
-        // If the toggle was successful, update the internal state
         this.getOn((error, value) => {
           if (!error) {
             this.service.getCharacteristic(Characteristic.On).updateValue(value);
@@ -149,10 +133,7 @@ class GiraLightAccessory {
     request(getEndpoint)
       .then(response => {
         this.log.debug('Get light state response:', response);
-
-        // Parse the response to determine the current state
         const currentState = parseResponseToState(response);
-
         callback(null, currentState);
       })
       .catch(error => {
@@ -162,10 +143,6 @@ class GiraLightAccessory {
   }
 
   setOn(value, callback) {
-    // Implement the logic to set the On state of the light
-    // ...
-
-    // Example: Toggle the light state
     this.toggleLight(value, callback);
   }
 }
@@ -173,15 +150,13 @@ class GiraLightAccessory {
 function parseResponseToState(response) {
   try {
     const parsedResponse = JSON.parse(response);
-    // Assuming the status is stored in the JSON as true or false
     return parsedResponse.status === 'on';
   } catch (error) {
-    // Error parsing the response
     return false;
   }
 }
 
-// Export the platform to Homebridge
 module.exports = (api) => {
   return new GiraHomeServerPlatform(api);
 };
+
