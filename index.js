@@ -1,20 +1,21 @@
-const request = require('request-promise');
-const { Service, Characteristic } = require('homebridge');
-
-class GiraHomeServerPlatform {
-  constructor(log, config, api) {
-    this.log = log;
+class GiraLightAccessory {
+  constructor(log, config, host, username, password) {
+    this.log = log; // Stellen Sie sicher, dass diese Zeile vorhanden ist
     this.config = config;
-    this.api = api;
-    this.accessories = [];
+    this.host = host;
+    this.username = username;
+    this.password = password;
+    this.service = null;
 
-    if (this.api) {
-      // Warten Sie auf die Homebridge-Initialisierung
-      this.api.on('didFinishLaunching', () => {
-        this.initialize();
-      });
+    if (this.config) {
+      this.name = this.config.name;
+      this.id = this.config.id;
+
+      // Weitere Initialisierung hier, falls erforderlich
+
+      this.log.debug('Configuring Gira Light accessory:', this.name, this.id);
     } else {
-      this.log.error('Homebridge API is not available. Unable to initialize the plugin.');
+      this.log.error('Missing configuration for Gira Light accessory. Please check your configuration file.');
     }
   }
 
