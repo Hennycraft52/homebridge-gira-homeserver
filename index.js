@@ -7,6 +7,13 @@ class GiraHomeServerPlatform {
     this.api = api;
     this.accessories = [];
 
+    // Warten Sie auf die Homebridge-Initialisierung
+    this.api.on('didFinishLaunching', () => {
+      this.initialize();
+    });
+  }
+
+  initialize() {
     if (this.config) {
       this.host = this.config.host;
       this.username = this.config.username;
@@ -146,19 +153,8 @@ class GiraLightAccessory {
   }
 }
 
-function parseResponseToState(response) {
-  try {
-    const parsedResponse = JSON.parse(response);
-    // Hier gehen wir davon aus, dass der Status im JSON als true oder false gespeichert ist
-    return parsedResponse.status === 'on';
-  } catch (error) {
-    // Fehler beim Parsen der Antwort
-    return false;
-  }
-}
-
 // Export the platform to Homebridge
 module.exports = (api) => {
-  api.registerPlatform('homebridge-gira-homeserver', 'GiraHomeServer', GiraHomeServerPlatform);
+  new GiraHomeServerPlatform(api);
 };
 
