@@ -1,97 +1,50 @@
 const request = require('request');
-const { Service, Characteristic } = require('homebridge');
+const { Accessory } = require('homebridge');
 
-class GiraLightAccessory {
-  constructor(log, config, host, username, password) {
+class GiraHomeserverPlatform {
+  constructor(log, config, api) {
     this.log = log;
     this.config = config;
-    this.host = host;
-    this.username = username;
-    this.password = password;
-    this.service = null;
+    this.api = api;
+    this.accessories = [];
 
+    if (this.api) {
+      this.api.on('didFinishLaunching', () => {
+        this.initialize();
+      });
+    } else {
+      this.log.error('Homebridge API is not available. Unable to initialize the plugin.');
+    }
+  }
+
+  initialize() {
     if (this.config) {
-      this.name = this.config.name;
-      this.id = this.config.id;
+      // Hier Initialisierung vornehmen
 
-      this.log.debug('Configuring Gira Light accessory:', this.name, this.id);
+      // Register the platform
+      if (this.api) {
+        this.api.registerPlatform('homebridge-gira-homeserver', 'GiraHomeserverPlatform', this);
+      } else {
+        this.log.error('Homebridge API is not available. Unable to register the platform.');
+      }
     } else {
-      this.log.error('Missing configuration for Gira Light accessory. Please check your configuration file.');
+      this.log.error('Missing configuration for GiraHomeserverPlatform. Please check your configuration file.');
     }
   }
 
-  getServices() {
-    this.service = new Service.Lightbulb(this.name);
-    this.service.getCharacteristic(Characteristic.On)
-      .on('get', this.getOn.bind(this))
-      .on('set', this.setOn.bind(this));
+  accessories(callback) {
+    this.log.debug('Discovering accessories...');
+    const accessories = [];
 
-    return [this.service];
-  }
-
-  refreshState() {
-    const getEndpoint = `https://${this.host}/endpoints/call?key=${this.id}&method=get&user=${this.username}&pw=${this.password}`;
-
-    request(getEndpoint, (error, response, body) => {
-      if (!error && response.statusCode === 200) {
-        this.log.debug('Refresh light state response:', body);
-        const currentState = parseResponseToState(body);
-        this.service.getCharacteristic(Characteristic.On).updateValue(currentState);
-      } else {
-        this.log.error('Error refreshing light state:', error ? error.message : 'Invalid response');
-      }
-    });
-  }
-
-  toggleLight(callback) {
-    const toggleEndpoint = `https://${this.host}/endpoints/call?key=${this.id}&method=toggle&value=1&user=${this.username}&pw=${this.password}`;
-
-    request(toggleEndpoint, (error, response, body) => {
-      if (!error && response.statusCode === 200) {
-        this.log.debug('Toggle light response:', body);
-        this.refreshState(); // Aktualisiert den Zustand nach dem Umschalten
-        callback(null);
-      } else {
-        this.log.error('Error toggling light:', error ? error.message : 'Invalid response');
-        callback(error);
-      }
-    });
-  }
-
-  getOn(callback) {
-    const getEndpoint = `https://${this.host}/endpoints/call?key=${this.id}&method=get&user=${this.username}&pw=${this.password}`;
-
-    request(getEndpoint, (error, response, body) => {
-      if (!error && response.statusCode === 200) {
-        this.log.debug('Get light state response:', body);
-        const currentState = parseResponseToState(body);
-        callback(null, currentState);
-      } else {
-        this.log.error('Error getting light state:', error ? error.message : 'Invalid response');
-        callback(error);
-      }
-    });
-  }
-
-  setOn(value, callback) {
-    if (value === 1) {
-      this.toggleLight(callback);
-    } else {
-      callback(null);
+    // Erstellen Sie für jedes Licht ein Accessory
+    for (const light of this.config.lights) {
+      const accessory = new GiraLightAccessory(this.log, light, this.config.serverIP, this.config.username, this.config.password);
+      accessories.push(accessory);
+      this.accessories.push(accessory);
     }
+
+    callback(accessories);
   }
 }
 
-function parseResponseToState(response) {
-  try {
-    const parsedResponse = JSON.parse(response);
-    return parsedResponse.status === 'on';
-  } catch (error) {
-    return false;
-  }
-}
-
-module.exports = (api) => {
-  api.registerAccessory('GiraHomeServer', 'GiraHomeServerAccessory', GiraLightAccessory);
-};
-
+module.exports = GiraHomeserverPlatform;
