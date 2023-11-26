@@ -25,6 +25,11 @@ class GiraHomeserverPlatform {
       this.lights = this.config.lights || [];
       this.refreshInterval = this.config.refreshInterval || 20;
 
+      if (!this.log) {
+        console.error('Log is not available. Cannot initialize the plugin.');
+        return;
+      }
+
       this.log.debug('Configuring Gira HomeServer platform:', this.host, this.username);
 
       // Starten Sie das Aktualisierungsintervall
@@ -159,3 +164,4 @@ function parseResponseToState(response) {
 module.exports = (api) => {
   return new GiraHomeserverPlatform(api);
 };
+
