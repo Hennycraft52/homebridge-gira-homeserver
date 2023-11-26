@@ -23,7 +23,7 @@ class GiraHomeserverPlatform {
 
       // Register the platform
       if (this.api) {
-        this.api.registerPlatform('homebridge-gira-homeserver', 'GiraHomeserverPlatform', this);
+        this.api.registerPlatform('homebridge-gira-homeserver', 'GiraHomeServer', GiraHomeserverPlatform);
       } else {
         this.log.error('Homebridge API is not available. Unable to register the platform.');
       }
