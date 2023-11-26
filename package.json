@@ -1,6 +1,7 @@
+  GNU nano 4.8                                                                                                   package.json                                                                                                             
 {
   "name": "homebridge-gira-homeserver",
-  "version": "1.4.2",
+  "version": "1.4.4",
   "description": "Ein Homebridge-Plugin zur Integration von Gira HomeServer in Apple HomeKit.",
   "main": "index.js",
   "scripts": {
@@ -9,13 +10,12 @@
   "keywords": ["homebridge", "homebridge-plugin", "gira", "homekit"],
   "author": "Dein Name",
   "license": "MIT",
-  "dependencies": {  
+  "dependencies": {
     "axios": ">1.0.1"
-      
+
   },
   "engines": {
-    "node": ">=14.0.0",  
-    "homebridge": ">=1.1.0" 
+    "homebridge": ">=1.1.0"
   },
   "repository": {
     "type": "git",
@@ -26,3 +26,18 @@
   },
   "homepage": "https://github.com/Hennycraft52/homebridge-gira-homeserver#readme"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
