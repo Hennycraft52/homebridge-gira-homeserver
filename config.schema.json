@@ -9,7 +9,7 @@
       "serverIP": "YOUR_SERVER_IP",
       "username": "YOUR_USERNAME",
       "password": "YOUR_PASSWORD",
-      "refreshInterval": 20, // Optional: Time in seconds for the refresh interval
+      "refreshInterval": 20, 
       "lights": [
         {
           "name": "Lamp1",
@@ -19,7 +19,7 @@
           "name": "Lamp2",
           "id": "YOUR_LAMP_ID_2"
         },
-        // Add more lights as needed
+        
       ]
     }
   ]
