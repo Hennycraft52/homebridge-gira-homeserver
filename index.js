@@ -12,7 +12,7 @@ class GiraHomeserverPlatform {
         this.initialize();
       });
     } else {
-      this.log.error('Homebridge API is not available. Unable to initialize the plugin.');
+      console.error('Homebridge API is not available. Unable to initialize the plugin.');
     }
   }
 
