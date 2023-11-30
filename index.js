@@ -1,167 +1,101 @@
-const request = require('request-promise');
+const axios = require('axios');
+const https = require('https');
+const fs = require('fs');
+const { toggleLamp } = require('./lib/toggle');
+const { getLampStatus } = require('./lib/get');
 
-class GiraHomeserverPlatform {
-  constructor(log, config, api) {
-    this.log = log;
-    this.config = config;
-    this.api = api;
-    this.accessories = [];
+class GiraHomeServerDiscovery {
+  constructor() {
+    this.devices = [];
+    this.ip = ''; // Setzen Sie Ihre IP-Adresse hier
+    this.username = ''; // Setzen Sie Ihren Benutzernamen hier
+    this.password = ''; // Setzen Sie Ihr Passwort hier
+  }
 
-    if (this.api) {
-      this.api.on('didFinishLaunching', () => {
-        this.initialize();
+  async discoverDevices() {
+    for (let i = 1; i <= 9; i++) {
+      for (let j = 1; j <= 9; j++) {
+        for (let k = 1; k <= 9; k++) {
+          const id = `${i}_${j}_${k}`;
+          await this.getDeviceInfo(id);
+        }
+      }
+    }
+    this.devices = this.devices.filter(device => device.tag !== null);
+
+    // Speichern Sie die entdeckten Geräte in einer JSON-Datei
+    const jsonData = JSON.stringify(this.devices, null, 2);
+    fs.writeFileSync('devices.json', jsonData);
+    console.log('Devices saved to devices.json');
+
+    return this.devices;
+  }
+
+  async getDeviceInfo(id) {
+    const url = `https://${this.ip}/endpoints/call?key=CO@${id}&method=meta&user=${this.username}&pw=${this.password}`;
+
+    try {
+      const response = await axios.get(url, {
+        httpsAgent: new https.Agent({ rejectUnauthorized: false })
       });
-    } else {
-      console.error('Homebridge API is not available. Unable to initialize the plugin.');
+
+      const { caption, tags } = response.data.data;
+      const name = caption;
+      const tag = tags.length > 0 ? tags[0] : null;
+
+      this.devices.push({ id, name, tag });
+    } catch (error) {
+      console.error(`Error getting device info for ${id}:`, error.message);
     }
   }
 
-  initialize() {
-    if (this.config) {
-      // Konfiguration abrufen
-      this.host = this.config.serverIP;
-      this.username = this.config.username;
-      this.password = this.config.password;
-      this.lights = this.config.lights || [];
-      this.refreshInterval = this.config.refreshInterval || 20;
+  async createHomeKitDevice(device) {
+    // Hier können Sie Logik hinzufügen, um ein HomeKit-Gerät für jedes Gira-Gerät zu erstellen
+    // Verwenden Sie dazu die Informationen aus dem "device" Objekt.
+    // Beachten Sie, dass dies stark von den Homebridge-APIs und Ihren spezifischen Anforderungen abhängt.
 
-      if (!this.log) {
-        console.error('Log is not available. Cannot initialize the plugin.');
-        return;
-      }
-
-      this.log.debug('Configuring Gira HomeServer platform:', this.host, this.username);
-
-      // Starten Sie das Aktualisierungsintervall
-      setInterval(() => {
-        this.refreshAccessories();
-      }, this.refreshInterval * 1000);
-
-      // Plattform registrieren
-      if (this.api) {
-        this.api.registerPlatform('homebridge-gira-homeserver', 'GiraHomeserverPlatform', this);
-      } else {
-        this.log.error('Homebridge API is not available. Unable to register the platform.');
-      }
-    } else {
-      this.log.error('Missing configuration for Gira HomeServer platform. Please check your configuration file.');
+    // Beispiel: Umschaltfunktion für Lampen
+    if (device.tag === 'Licht') {
+      this.createToggleSwitch(device);
     }
+    // Fügen Sie weitere Geräteklassen hinzu und erstellen Sie entsprechende HomeKit-Geräte
+
+    console.log(`HomeKit device created for ${device.name} with tag ${device.tag}`);
   }
 
-  accessories(callback) {
-    this.log.debug('Discovering accessories...');
-    const accessories = [];
+  createToggleSwitch(device) {
+    const Service = this.homebridge.hap.Service;
+    const Characteristic = this.homebridge.hap.Characteristic;
 
-    // Erstellen Sie für jede Lampe ein Zubehör
-    for (const light of this.lights) {
-      const accessory = new GiraLightAccessory(this.log, light, this.host, this.username, this.password);
-      accessories.push(accessory);
-      this.accessories.push(accessory);
-    }
+    const lampService = new Service.Switch(device.name, device.id);
 
-    callback(accessories);
-  }
-
-  refreshAccessories() {
-    this.log.debug('Refreshing accessories...');
-    for (const accessory of this.accessories) {
-      accessory.refreshState();
-    }
-  }
-}
-
-class GiraLightAccessory {
-  constructor(log, config, host, username, password) {
-    this.log = log;
-    this.config = config;
-    this.host = host;
-    this.username = username;
-    this.password = password;
-    this.service = null;
-
-    if (this.config) {
-      this.name = this.config.name;
-      this.id = this.config.id;
-
-      this.log.debug('Configuring Gira Light accessory:', this.name, this.id);
-    } else {
-      this.log.error('Missing configuration for Gira Light accessory. Please check your configuration file.');
-    }
-  }
-
-  getServices() {
-    this.service = new Service.Lightbulb(this.name);
-    this.service.getCharacteristic(Characteristic.On)
-      .on('get', this.getOn.bind(this))
-      .on('set', this.setOn.bind(this));
-
-    return [this.service];
-  }
-
-  refreshState() {
-    const getEndpoint = `https://${this.host}/endpoints/call?key=${this.id}&method=get&user=${this.username}&pw=${this.password}`;
-
-    request(getEndpoint)
-      .then(response => {
-        this.log.debug('Refresh light state response:', response);
-        const currentState = parseResponseToState(response);
-        this.service.getCharacteristic(Characteristic.On).updateValue(currentState);
+    lampService
+      .getCharacteristic(Characteristic.On)
+      .on('get', async callback => {
+        const status = await getLampStatus(this.ip, device.id, this.username, this.password);
+        callback(null, status === '1');
       })
-      .catch(error => {
-        this.log.error('Error refreshing light state:', error.message);
-      });
-  }
-
-  toggleLight(on, callback) {
-    const toggleEndpoint = `https://${this.host}/endpoints/call?key=${this.id}&method=toggle&value=${on ? 1 : 0}&user=${this.username}&pw=${this.password}`;
-
-    request(toggleEndpoint)
-      .then(response => {
-        this.log.debug('Toggle light response:', response);
-        this.getOn((error, value) => {
-          if (!error) {
-            this.service.getCharacteristic(Characteristic.On).updateValue(value);
-          }
-        });
-
+      .on('set', async (value, callback) => {
+        await toggleLamp(this.ip, device.id, this.username, this.password);
         callback(null);
-      })
-      .catch(error => {
-        this.log.error('Error toggling light:', error.message);
-        callback(error);
       });
-  }
 
-  getOn(callback) {
-    const getEndpoint = `https://${this.host}/endpoints/call?key=${this.id}&method=get&user=${this.username}&pw=${this.password}`;
-
-    request(getEndpoint)
-      .then(response => {
-        this.log.debug('Get light state response:', response);
-        const currentState = parseResponseToState(response);
-        callback(null, currentState);
-      })
-      .catch(error => {
-        this.log.error('Error getting light state:', error.message);
-        callback(error);
-      });
-  }
-
-  setOn(value, callback) {
-    this.toggleLight(value, callback);
+    this.homebridge.registerAccessory('homebridge-gira-homeserver', 'LampSwitch', lampService);
   }
 }
 
-function parseResponseToState(response) {
-  try {
-    const parsedResponse = JSON.parse(response);
-    return parsedResponse.status === 'on';
-  } catch (error) {
-    return false;
-  }
-}
+// Beispiel-Nutzung
+const discovery = new GiraHomeServerDiscovery();
 
-module.exports = (api) => {
-  return new GiraHomeserverPlatform(api);
-};
+discovery.discoverDevices()
+  .then(devices => {
+    console.log('Discovered Devices:', devices);
+
+    // Hier können Sie weitere Logik hinzufügen, um die Geräte in Ihr Homebridge-Plugin zu integrieren
+    // Zum Beispiel: Erstellen Sie für jedes Gerät ein HomeKit-Gerät
+    devices.forEach(device => {
+      discovery.createHomeKitDevice(device);
+    });
+  })
+  .catch(error => console.error('Error:', error));
 
