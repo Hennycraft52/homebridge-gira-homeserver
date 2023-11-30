@@ -1,5 +1,8 @@
 const girahome = require('./lib/girahome'); // Passe den Pfad entsprechend an
 const { Accessory, Service, Characteristic, uuid } = require('homebridge');
+const axios = require('axios');
+const https = require('https');
+
 
 class GirahomePlatform {
     constructor(log, config) {
