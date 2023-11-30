@@ -7,26 +7,59 @@ class GiraHomeServerDiscovery {
     this.log = log;
     this.config = config;
     this.homebridge = homebridge;
-    this.devices = [];
+    this.devices = this.loadDevices();
+    this.updateInterval = setInterval(() => this.updateDeviceStatus(), 10000); // Aktualisieren Sie alle 10 Sekunden
+  }
+
+  loadDevices() {
+    try {
+      const rawData = fs.readFileSync('devices.json');
+      return JSON.parse(rawData);
+    } catch (error) {
+      return [];
+    }
+  }
+
+  async updateDeviceStatus() {
+    this.log('Updating device status...');
+    this.devices.forEach(async (device) => {
+      const status = await this.getDeviceStatus(device.id);
+      this.log(`Device ${device.name} status updated to ${status}`);
+      // Hier können Sie Logik hinzufügen, um den HomeKit-Status zu aktualisieren
+      // Verwenden Sie dazu die Informationen aus dem "device" und "status" Objekten.
+      // Beachten Sie, dass dies stark von den Homebridge-APIs und Ihren spezifischen Anforderungen abhängt.
+    });
   }
 
   async discoverDevices() {
     const { ip, username, password } = this.config;
 
-    for (let i = 1; i <= 9; i++) {
-      for (let j = 1; j <= 9; j++) {
-        for (let k = 1; k <= 9; k++) {
-          const id = `${i}_${j}_${k}`;
-          await this.getDeviceInfo(id, ip, username, password);
+    if (this.devices.length === 0) {
+      this.log('No devices found. Discovering devices...');
+
+      for (let i = 1; i <= 9; i++) {
+        for (let j = 1; j <= 9; j++) {
+          for (let k = 1; k <= 9; k++) {
+            const id = `${i}_${j}_${k}`;
+            await this.getDeviceInfo(id, ip, username, password);
+          }
         }
       }
-    }
-    this.devices = this.devices.filter(device => device.tag !== null);
 
-    // Speichern Sie die entdeckten Geräte in einer JSON-Datei
-    const jsonData = JSON.stringify(this.devices, null, 2);
-    fs.writeFileSync('devices.json', jsonData);
-    this.log('Devices saved to devices.json');
+      this.devices = this.devices.filter(device => device.tag !== null);
+
+      // Speichern Sie die entdeckten Geräte in einer JSON-Datei
+      const jsonData = JSON.stringify(this.devices, null, 2);
+      fs.writeFileSync('devices.json', jsonData);
+      this.log('Devices saved to devices.json');
+    } else {
+      this.log('Devices loaded from devices.json:', this.devices);
+    }
+
+    // Erstellen und speichern Sie HomeKit-Geräte für jedes Gira-Gerät
+    this.devices.forEach(device => {
+      this.createHomeKitDevice(device);
+    });
 
     return this.devices;
   }
@@ -54,8 +87,7 @@ class GiraHomeServerDiscovery {
     // Verwenden Sie dazu die Informationen aus dem "device" Objekt.
     // Beachten Sie, dass dies stark von den Homebridge-APIs und Ihren spezifischen Anforderungen abhängt.
 
-    // Beispiel: Umschaltfunktion für Lampen
-    if (device.tag === 'Licht') {
+    if (device.tag === 'Licht' || device.tag === 'Steckdose' || device.tag === 'Rolladen') {
       this.createToggleSwitch(device);
     }
     // Fügen Sie weitere Geräteklassen hinzu und erstellen Sie entsprechende HomeKit-Geräte
@@ -66,25 +98,25 @@ class GiraHomeServerDiscovery {
   createToggleSwitch(device) {
     const { Service, Characteristic } = this.homebridge.hap;
 
-    const lampService = new Service.Switch(device.name, device.id);
+    const switchService = new Service.Switch(device.name, device.id);
 
-    lampService
+    switchService
       .getCharacteristic(Characteristic.On)
       .on('get', async callback => {
-        const status = await this.getLampStatus(device.id);
+        const status = await this.getDeviceStatus(device.id);
         callback(null, status === '1');
       })
       .on('set', async (value, callback) => {
-        await this.toggleLamp(device.id);
+        await this.toggleDevice(device.id);
         callback(null);
       });
 
-    this.homebridge.registerAccessory('homebridge-gira-homeserver', 'LampSwitch', lampService);
+    this.homebridge.registerAccessory('homebridge-gira-homeserver', 'ToggleSwitch', switchService);
   }
 
-  async toggleLamp(lampId) {
+  async toggleDevice(deviceId) {
     const { ip, username, password } = this.config;
-    const url = `https://${ip}/endpoints/call?key=CO@${lampId}&method=toggle&value=1&user=${username}&pw=${password}`;
+    const url = `https://${ip}/endpoints/call?key=CO@${deviceId}&method=toggle&value=1&user=${username}&pw=${password}`;
 
     try {
       const response = await axios.get(url, {
@@ -93,13 +125,13 @@ class GiraHomeServerDiscovery {
 
       this.log('Toggle response:', response.data);
     } catch (error) {
-      this.log(`Toggle error for ${lampId}: ${error.message}`);
+      this.log(`Toggle error for ${deviceId}: ${error.message}`);
     }
   }
 
-  async getLampStatus(lampId) {
+  async getDeviceStatus(deviceId) {
     const { ip, username, password } = this.config;
-    const url = `https://${ip}/endpoints/call?key=CO@${lampId}&method=get&user=${username}&pw=${password}`;
+    const url = `https://${ip}/endpoints/call?key=CO@${deviceId}&method=get&user=${username}&pw=${password}`;
 
     try {
       const response = await axios.get(url, {
@@ -108,7 +140,7 @@ class GiraHomeServerDiscovery {
 
       return response.data;
     } catch (error) {
-      this.log(`Get status error for ${lampId}: ${error.message}`);
+      this.log(`Get status error for ${deviceId}: ${error.message}`);
       return '0'; // Annahme: Standardstatus ist '0'
     }
   }
