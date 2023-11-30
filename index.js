@@ -125,7 +125,7 @@ class DeviceController {
             httpsAgent: new https.Agent({ rejectUnauthorized: false })
         });
 
-        console.log('API Response:', response.data);
+        console.log('Full API Response:', response);
 
         if (response.data && response.data.data && response.data.data.caption) {
             const { caption, tags } = response.data.data;
@@ -145,6 +145,7 @@ class DeviceController {
         throw error;
     }
 }
+
 
 
 
