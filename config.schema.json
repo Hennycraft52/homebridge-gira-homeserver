@@ -1,27 +1,32 @@
 {
-  "id": "GiraHomeServer",
-  "name": "Gira HomeServer",
-  "description": "Homebridge Plugin for Gira HomeServer",
-  "platforms": [
-    {
-      "name": "GiraHomeServer",
-      "platform": "GiraHomeServer",
-      "serverIP": "YOUR_SERVER_IP",
-      "username": "YOUR_USERNAME",
-      "password": "YOUR_PASSWORD",
-      "refreshInterval": 20, 
-      "lights": [
-        {
-          "name": "Lamp1",
-          "id": "YOUR_LAMP_ID_1"
-        },
-        {
-          "name": "Lamp2",
-          "id": "YOUR_LAMP_ID_2"
-        },
-        
-      ]
+  "pluginAlias": "GiraHomeServerPlugin",
+  "pluginType": "platform",
+  "singular": true,
+  "schema": {
+    "type": "object",
+    "properties": {
+      "ip": {
+        "title": "Gira HomeServer IP",
+        "type": "string",
+        "required": true
+      },
+      "username": {
+        "title": "Gira HomeServer Username",
+        "type": "string",
+        "required": true
+      },
+      "password": {
+        "title": "Gira HomeServer Password",
+        "type": "string",
+        "required": true
+      },
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "required": true,
+        "default": "Gira HomeServer"
+      }
     }
-  ]
+  }
 }
 
