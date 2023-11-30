@@ -117,13 +117,15 @@ class DeviceController {
         }
     }
 
-    async getDeviceInformation(id, type) {
+   async getDeviceInformation(id, type) {
     const url = `https://${this.ip}/endpoints/call?key=CO@${id}&method=meta&user=${this.username}&pw=${this.password}`;
 
     try {
         const response = await axios.get(url, {
             httpsAgent: new https.Agent({ rejectUnauthorized: false })
         });
+
+        console.log('API Response:', response.data);
 
         if (response.data && response.data.data && response.data.data.caption) {
             const { caption, tags } = response.data.data;
@@ -144,7 +146,6 @@ class DeviceController {
     }
 }
 
-}
 
 
 module.exports = homebridge => {
