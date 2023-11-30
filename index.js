@@ -1,150 +1,144 @@
-const axios = require('axios');
-const https = require('https');
-const fs = require('fs');
+const girahome = require('./lib/girahome'); // Passe den Pfad entsprechend an
+const { Accessory, Service, Characteristic, uuid } = require('homebridge');
 
-class GiraHomeServerAccessory {
-  constructor(log, config, homebridge, device) {
-    this.log = log;
-    this.config = config;
-    this.homebridge = homebridge;
-    this.device = device;
-    this.service = this.createAccessoryService();
-    this.setupAccessoryService();
-  }
+class GirahomePlatform {
+    constructor(log, config) {
+        this.log = log;
+        this.config = config;
+        this.devices = [];
+        this.deviceController = new DeviceController(config);
+        this.girahome = girahome; // Verwende deine Bibliothek
 
-  createAccessoryService() {
-    const { Service, Characteristic } = this.homebridge.hap;
-    const { name, tag } = this.device;
-
-    if (tag === 'Licht' || tag === 'Steckdose' || tag === 'Rolladen') {
-      return new Service.Switch(name, this.device.id);
+        this.setupAccessories();
     }
 
-    // Hier können Sie weitere Zubehörtypen hinzufügen, die zu Ihren Gira-Geräten passen
-    // Beispiel:
-    // if (tag === 'Garage') {
-    //   return new Service.GarageDoorOpener(name, this.device.id);
-    // }
+    async setupAccessories() {
+        try {
+            await this.deviceController.populateDevices();
 
-    // Rückgabe eines Standarddienstes, falls kein passender Typ gefunden wurde
-    return new Service.AccessoryInformation();
-  }
+            for (const device of this.deviceController.devices) {
+                const accessory = new Accessory(device.name, uuid.generate(device.id));
 
-  setupAccessoryService() {
-    const { Service, Characteristic } = this.homebridge.hap;
+                switch (device.type) {
+                    case 'Licht':
+                        accessory.addService(Service.Lightbulb, device.name);
+                        break;
+                    // Weitere Cases für verschiedene Gerätetypen
+                    default:
+                        this.log(`Unsupported device type: ${device.type}`);
+                        continue;
+                }
 
-    if (this.service instanceof Service.Switch) {
-      this.service
-        .getCharacteristic(Characteristic.On)
-        .on('get', this.handleGet.bind(this))
-        .on('set', this.handleSet.bind(this));
+                accessory
+                    .getService(Service.AccessoryInformation)
+                    .setCharacteristic(Characteristic.Manufacturer, 'Girahome')
+                    .setCharacteristic(Characteristic.Model, '1.0')
+                    .setCharacteristic(Characteristic.SerialNumber, device.id);
+
+                accessory
+                    .getService(Service.Lightbulb)
+                    .getCharacteristic(Characteristic.On)
+                    .on('get', this.getDeviceStatus.bind(this, device.id))
+                    .on('set', this.setDeviceStatus.bind(this, device.id));
+
+                this.devices.push(accessory);
+            }
+        } catch (error) {
+            this.log('Error setting up accessories:', error);
+        }
     }
 
-    // Hier können Sie weitere Zubehörtypen einrichten
-    // Beispiel:
-    // if (this.service instanceof Service.GarageDoorOpener) {
-    //   this.service
-    //     .getCharacteristic(Characteristic.TargetDoorState)
-    //     .on('set', this.handleSet.bind(this));
-    // }
-  }
-
-  async handleGet(callback) {
-    const status = await this.getDeviceStatus();
-    callback(null, status === '1');
-  }
-
-  async handleSet(value, callback) {
-    await this.toggleDevice();
-    callback(null);
-  }
-
-  async getDeviceStatus() {
-    const { ip, username, password } = this.config;
-    const url = `https://${ip}/endpoints/call?key=CO@${this.device.id}&method=get&user=${username}&pw=${password}`;
-
-    try {
-      const response = await axios.get(url, {
-        httpsAgent: new https.Agent({ rejectUnauthorized: false })
-      });
-
-      return response.data;
-    } catch (error) {
-      this.log(`Get status error for ${this.device.id}: ${error.message}`);
-      return '0';
+    async getDeviceStatus(deviceId, callback) {
+        const { ip, username, password } = this.config;
+        try {
+            const status = await this.girahome.getDeviceStatus(ip, deviceId, username, password);
+            this.log(`Get Status for ${deviceId}: ${status}`);
+            callback(null, status);
+        } catch (error) {
+            this.log('Error getting device status:', error);
+            callback(error);
+        }
     }
-  }
 
-  async toggleDevice() {
-    const { ip, username, password } = this.config;
-    const url = `https://${ip}/endpoints/call?key=CO@${this.device.id}&method=toggle&value=1&user=${username}&pw=${password}`;
-
-    try {
-      const response = await axios.get(url, {
-        httpsAgent: new https.Agent({ rejectUnauthorized: false })
-      });
-
-      this.log('Toggle response:', response.data);
-    } catch (error) {
-      this.log(`Toggle error for ${this.device.id}: ${error.message}`);
+    async setDeviceStatus(deviceId, value, callback) {
+        const { ip, username, password } = this.config;
+        try {
+            await this.girahome.toggleDevice(ip, deviceId, username, password);
+            this.log(`Set Status for ${deviceId} to ${value}`);
+            callback();
+        } catch (error) {
+            this.log('Error setting device status:', error);
+            callback(error);
+        }
     }
-  }
 
-  identify(callback) {
-    this.log(`Identify requested for ${this.device.name}`);
-    callback();
-  }
-
-  getServices() {
-    return [this.service];
-  }
+    accessories(callback) {
+        callback(this.devices);
+    }
 }
 
-class GiraHomeServerPlatform {
-  constructor(log, config, homebridge) {
-    this.log = log;
-    this.config = config;
-    this.homebridge = homebridge;
-    this.devices = this.loadDevices();
-    this.accessories = this.createAccessories();
-    this.updateInterval = setInterval(() => this.updateDeviceStatus(), 10000); // Aktualisieren Sie alle 10 Sekunden
-  }
-
-  loadDevices() {
-    try {
-      const rawData = fs.readFileSync('devices.json');
-      return JSON.parse(rawData);
-    } catch (error) {
-      return [];
+class DeviceController {
+    constructor(config) {
+        this.ip = config.ip;
+        this.username = config.username;
+        this.password = config.password;
+        this.devices = [];
     }
-  }
 
-  createAccessories() {
-    const accessories = [];
-    this.devices.forEach(device => {
-      const accessory = new GiraHomeServerAccessory(this.log, this.config, this.homebridge, device);
-      accessories.push(accessory);
-    });
-    return accessories;
-  }
+    async populateDevices() {
+        const deviceTypes = ['Licht', 'Steckdose', 'Garage', 'Heizstrahler', 'Rolladen', 'Fensterkontakt', 'Tuerkontakt'];
 
-  async updateDeviceStatus() {
-    this.log('Updating device status...');
-    this.accessories.forEach(async accessory => {
-      if (accessory instanceof GiraHomeServerAccessory) {
-        const status = await accessory.getDeviceStatus();
-        this.log(`Device ${accessory.device.name} status updated to ${status}`);
-        accessory.service.updateCharacteristic(this.homebridge.hap.Characteristic.On, status === '1');
-      }
-    });
-  }
+        for (const type of deviceTypes) {
+            for (let i = 1; i <= 9; i++) {
+                for (let j = 1; j <= 9; j++) {
+                    for (let k = 1; k <= 9; k++) {
+                        const id = `${i}_${j}_${k}`;
+                        const name = `Device_${id}`;
 
-  accessories(callback) {
-    callback(this.accessories);
-  }
+                        try {
+                            const deviceInfo = await this.getDeviceInformation(id, type);
+                            if (deviceInfo) {
+                                this.devices.push({
+                                    id,
+                                    name,
+                                    type,
+                                    // Hier können Sie weitere Eigenschaften je nach Bedarf hinzufügen
+                                });
+                            }
+                        } catch (error) {
+                            console.error(`Error getting device information for ${id}:`, error.message);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    async getDeviceInformation(id, type) {
+        const url = `https://${this.ip}/endpoints/call?key=CO@${id}&method=meta&user=${this.username}&pw=${this.password}`;
+
+        try {
+            const response = await axios.get(url, {
+                httpsAgent: new https.Agent({ rejectUnauthorized: false })
+            });
+
+            const { caption, tags } = response.data.data;
+            // Hier können Sie weitere Informationen je nach Bedarf extrahieren
+
+            return {
+                caption,
+                tags,
+                // Fügen Sie weitere Informationen hinzu, wenn benötigt
+            };
+        } catch (error) {
+            console.error(`Error getting device information for ${id}:`, error.message);
+            throw error;
+        }
+    }
 }
 
-// Beispiel-Nutzung
+
 module.exports = homebridge => {
-  homebridge.registerPlatform('homebridge-gira-homeserver', 'GiraHomeServer', GiraHomeServerPlatform);
+    homebridge.registerPlatform('GirahomePlatform', 'Girahome', GirahomePlatform, true);
 };
+
