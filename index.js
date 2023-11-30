@@ -25,9 +25,11 @@ class GiraHomeServerDiscovery {
     this.devices.forEach(async (device) => {
       const status = await this.getDeviceStatus(device.id);
       this.log(`Device ${device.name} status updated to ${status}`);
-      // Hier können Sie Logik hinzufügen, um den HomeKit-Status zu aktualisieren
-      // Verwenden Sie dazu die Informationen aus dem "device" und "status" Objekten.
-      // Beachten Sie, dass dies stark von den Homebridge-APIs und Ihren spezifischen Anforderungen abhängt.
+      const accessory = this.homebridge.accessories.find(acc => acc.context.id === device.id);
+      if (accessory) {
+        accessory.getService(this.homebridge.hap.Service.Switch).updateCharacteristic(this.homebridge.hap.Characteristic.On, status === '1');
+        accessory.getService(this.homebridge.hap.Service.Switch).updateCharacteristic(this.homebridge.hap.Characteristic.Status, status === '1');
+      }
     });
   }
 
@@ -83,10 +85,6 @@ class GiraHomeServerDiscovery {
   }
 
   async createHomeKitDevice(device) {
-    // Hier können Sie Logik hinzufügen, um ein HomeKit-Gerät für jedes Gira-Gerät zu erstellen
-    // Verwenden Sie dazu die Informationen aus dem "device" Objekt.
-    // Beachten Sie, dass dies stark von den Homebridge-APIs und Ihren spezifischen Anforderungen abhängt.
-
     if (device.tag === 'Licht' || device.tag === 'Steckdose' || device.tag === 'Rolladen') {
       this.createToggleSwitch(device);
     }
@@ -110,6 +108,17 @@ class GiraHomeServerDiscovery {
         await this.toggleDevice(device.id);
         callback(null);
       });
+
+    // Beispiel: Fügen Sie ein neues Statusattribut hinzu
+    switchService
+      .addCharacteristic(new Characteristic.Status())
+      .on('get', async callback => {
+        const status = await this.getDeviceStatus(device.id);
+        callback(null, status === '1');
+      });
+
+    // Beispiel: Speichern Sie Zubehörinformationen
+    switchService.context.id = device.id;
 
     this.homebridge.registerAccessory('homebridge-gira-homeserver', 'ToggleSwitch', switchService);
   }
