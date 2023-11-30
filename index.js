@@ -1,23 +1,23 @@
 const axios = require('axios');
 const https = require('https');
 const fs = require('fs');
-const { toggleLamp } = require('./lib/toggle');
-const { getLampStatus } = require('./lib/get');
 
 class GiraHomeServerDiscovery {
-  constructor() {
+  constructor(log, config, homebridge) {
+    this.log = log;
+    this.config = config;
+    this.homebridge = homebridge;
     this.devices = [];
-    this.ip = ''; // Setzen Sie Ihre IP-Adresse hier
-    this.username = ''; // Setzen Sie Ihren Benutzernamen hier
-    this.password = ''; // Setzen Sie Ihr Passwort hier
   }
 
   async discoverDevices() {
+    const { ip, username, password } = this.config;
+
     for (let i = 1; i <= 9; i++) {
       for (let j = 1; j <= 9; j++) {
         for (let k = 1; k <= 9; k++) {
           const id = `${i}_${j}_${k}`;
-          await this.getDeviceInfo(id);
+          await this.getDeviceInfo(id, ip, username, password);
         }
       }
     }
@@ -26,13 +26,13 @@ class GiraHomeServerDiscovery {
     // Speichern Sie die entdeckten Geräte in einer JSON-Datei
     const jsonData = JSON.stringify(this.devices, null, 2);
     fs.writeFileSync('devices.json', jsonData);
-    console.log('Devices saved to devices.json');
+    this.log('Devices saved to devices.json');
 
     return this.devices;
   }
 
-  async getDeviceInfo(id) {
-    const url = `https://${this.ip}/endpoints/call?key=CO@${id}&method=meta&user=${this.username}&pw=${this.password}`;
+  async getDeviceInfo(id, ip, username, password) {
+    const url = `https://${ip}/endpoints/call?key=CO@${id}&method=meta&user=${username}&pw=${password}`;
 
     try {
       const response = await axios.get(url, {
@@ -45,7 +45,7 @@ class GiraHomeServerDiscovery {
 
       this.devices.push({ id, name, tag });
     } catch (error) {
-      console.error(`Error getting device info for ${id}:`, error.message);
+      this.log(`Error getting device info for ${id}: ${error.message}`);
     }
   }
 
@@ -60,42 +60,61 @@ class GiraHomeServerDiscovery {
     }
     // Fügen Sie weitere Geräteklassen hinzu und erstellen Sie entsprechende HomeKit-Geräte
 
-    console.log(`HomeKit device created for ${device.name} with tag ${device.tag}`);
+    this.log(`HomeKit device created for ${device.name} with tag ${device.tag}`);
   }
 
   createToggleSwitch(device) {
-    const Service = this.homebridge.hap.Service;
-    const Characteristic = this.homebridge.hap.Characteristic;
+    const { Service, Characteristic } = this.homebridge.hap;
 
     const lampService = new Service.Switch(device.name, device.id);
 
     lampService
       .getCharacteristic(Characteristic.On)
       .on('get', async callback => {
-        const status = await getLampStatus(this.ip, device.id, this.username, this.password);
+        const status = await this.getLampStatus(device.id);
         callback(null, status === '1');
       })
       .on('set', async (value, callback) => {
-        await toggleLamp(this.ip, device.id, this.username, this.password);
+        await this.toggleLamp(device.id);
         callback(null);
       });
 
     this.homebridge.registerAccessory('homebridge-gira-homeserver', 'LampSwitch', lampService);
   }
+
+  async toggleLamp(lampId) {
+    const { ip, username, password } = this.config;
+    const url = `https://${ip}/endpoints/call?key=CO@${lampId}&method=toggle&value=1&user=${username}&pw=${password}`;
+
+    try {
+      const response = await axios.get(url, {
+        httpsAgent: new https.Agent({ rejectUnauthorized: false })
+      });
+
+      this.log('Toggle response:', response.data);
+    } catch (error) {
+      this.log(`Toggle error for ${lampId}: ${error.message}`);
+    }
+  }
+
+  async getLampStatus(lampId) {
+    const { ip, username, password } = this.config;
+    const url = `https://${ip}/endpoints/call?key=CO@${lampId}&method=get&user=${username}&pw=${password}`;
+
+    try {
+      const response = await axios.get(url, {
+        httpsAgent: new https.Agent({ rejectUnauthorized: false })
+      });
+
+      return response.data;
+    } catch (error) {
+      this.log(`Get status error for ${lampId}: ${error.message}`);
+      return '0'; // Annahme: Standardstatus ist '0'
+    }
+  }
 }
 
 // Beispiel-Nutzung
-const discovery = new GiraHomeServerDiscovery();
-
-discovery.discoverDevices()
-  .then(devices => {
-    console.log('Discovered Devices:', devices);
-
-    // Hier können Sie weitere Logik hinzufügen, um die Geräte in Ihr Homebridge-Plugin zu integrieren
-    // Zum Beispiel: Erstellen Sie für jedes Gerät ein HomeKit-Gerät
-    devices.forEach(device => {
-      discovery.createHomeKitDevice(device);
-    });
-  })
-  .catch(error => console.error('Error:', error));
-
+module.exports = (homebridge) => {
+  homebridge.registerPlatform('homebridge-gira-homeserver', 'GiraHomeServer', GiraHomeServerDiscovery);
+};
