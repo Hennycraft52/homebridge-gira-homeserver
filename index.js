@@ -118,13 +118,14 @@ class DeviceController {
     }
 
     async getDeviceInformation(id, type) {
-        const url = `https://${this.ip}/endpoints/call?key=CO@${id}&method=meta&user=${this.username}&pw=${this.password}`;
+    const url = `https://${this.ip}/endpoints/call?key=CO@${id}&method=meta&user=${this.username}&pw=${this.password}`;
 
-        try {
-            const response = await axios.get(url, {
-                httpsAgent: new https.Agent({ rejectUnauthorized: false })
-            });
+    try {
+        const response = await axios.get(url, {
+            httpsAgent: new https.Agent({ rejectUnauthorized: false })
+        });
 
+        if (response.data && response.data.data && response.data.data.caption) {
             const { caption, tags } = response.data.data;
             // Hier können Sie weitere Informationen je nach Bedarf extrahieren
 
@@ -133,11 +134,16 @@ class DeviceController {
                 tags,
                 // Fügen Sie weitere Informationen hinzu, wenn benötigt
             };
-        } catch (error) {
-            console.error(`Error getting device information for ${id}:`, error.message);
-            throw error;
+        } else {
+            console.error(`Error getting device information for ${id}: Response data is incomplete.`);
+            return null;
         }
+    } catch (error) {
+        console.error(`Error getting device information for ${id}:`, error.message);
+        throw error;
     }
+}
+
 }
 
 
